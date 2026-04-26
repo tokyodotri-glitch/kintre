@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="鍛錬" />
+<meta name="theme-color" content="#0a0a0a" />
+<link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%230a0a0a'/><text x='50%25' y='54%25' font-family='sans-serif' font-size='72' font-weight='900' fill='%23d4ff00' text-anchor='middle' dominant-baseline='middle'>鍛</text></svg>" />
+<title>鍛錬 / Training Log</title>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/recharts@2.12.7/umd/Recharts.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body, #root { background: #0a0a0a; margin: 0; padding: 0; min-height: 100vh; }
+  body { overscroll-behavior-y: none; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useMemo } = React;
+const { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } = Recharts;
+
+const STORAGE_KEY = "workouts:all_v1";
+
+// ---------- Exercise Library ----------
+const EXERCISE_LIBRARY = {
+  chest: { label: "胸", code: "CHEST", color: "#ff6b6b", items: ["ベンチプレス","インクラインベンチプレス","デクラインベンチプレス","ダンベルベンチプレス","インクラインダンベルプレス","ダンベルフライ","ディップス"] },
+  back: { label: "背中", code: "BACK", color: "#4ecdc4", items: ["デッドリフト","ベントオーバーロウ","ダンベルロウ","Tバーロウ","懸垂","シュラッグ"] },
+  shoulders: { label: "肩", code: "SHLDR", color: "#ffd93d", items: ["バーベルショルダープレス","ダンベルショルダープレス","アーノルドプレス","サイドレイズ","フロントレイズ","リアレイズ","アップライトロウ"] },
+  arms: { label: "腕", code: "ARMS", color: "#a78bfa", items: ["バーベルカール","ダンベルカール","ハンマーカール","プリーチャーカール","ナローベンチプレス","フレンチプレス","トライセプスエクステンション","キックバック"] },
+  legs: { label: "脚", code: "LEGS", color: "#34d399", items: ["バーベルスクワット","フロントスクワット","ブルガリアンスクワット","ルーマニアンデッドリフト","ランジ","ヒップスラスト","カーフレイズ"] },
+  core: { label: "体幹", code: "CORE", color: "#fb923c", items: ["アブローラー","ハンギングレッグレイズ","プランク","ロシアンツイスト","ケーブルクランチ"] },
+  custom: { label: "カスタム", code: "CUSTOM", color: "#888", items: [] },
+};
+
+const C = { bg:"#0a0a0a", surface:"#141414", border:"#262626", accent:"#d4ff00", text:"#fafafa", muted:"#888", danger:"#ff4d4d" };
+const jp = { fontFamily: "'Noto Sans JP', -apple-system, sans-serif" };
+const display = { fontFamily: "'Oswald', -apple-system, sans-serif", letterSpacing: "0.02em" };
+const num = { fontFamily: "'Archivo Black', Impact, sans-serif" };
+const mono = { fontFamily: "'JetBrains Mono', Menlo, monospace" };
+
+const todayISO = () => { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); };
+const fmtDate = (iso) => { const [y, m, d] = iso.split("-"); const days = ["日","月","火","水","木","金","土"]; const dt = new Date(`${iso}T00:00:00`); return { m: parseInt(m), d: parseInt(d), y, wd: days[dt.getDay()] }; };
+const totalVolume = (ex) => ex.sets.reduce((s, x) => s + (x.weight || 0) * (x.reps || 0), 0);
+
+const GlobalStyles = () => (
+  <style>{`
+    @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Archivo+Black&family=Noto+Sans+JP:wght@400;500;700&family=JetBrains+Mono:wght@500&display=swap');
+    input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    input[type=number] { -moz-appearance: textfield; }
+    .no-scroll { scrollbar-width: none; }
+    .no-scroll::-webkit-scrollbar { display: none; }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .anim-in { animation: slideUp 220ms ease-out both; }
+  `}</style>
+);
+
+function App() {
+  const [tab, setTab] = useState("record");
+  const [workouts, setWorkouts] = useState([]);
+  const [loaded, setLoaded] = useState(false);
+  const [toast, setToast] = useState(null);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) setWorkouts(JSON.parse(raw));
+    } catch (e) { console.error(e); }
+    setLoaded(true);
+  }, []);
+
+  const persist = (data) => {
+    setWorkouts(data);
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
+    catch (e) { showToast("保存に失敗しました"); }
+  };
+
+  const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 2400); };
+
+  const addWorkout = (w) => {
+    const next = [w, ...workouts].sort((a, b) => b.date.localeCompare(a.date));
+    persist(next);
+    setTab("history");
+    showToast("記録を保存しました");
+  };
+
+  const removeWorkout = (id) => {
+    persist(workouts.filter((w) => w.id !== id));
+    showToast("記録を削除しました");
+  };
+
+  const importJson = (data) => {
+    if (!Array.isArray(data)) { showToast("不正なファイル形式"); return; }
+    const merged = [...workouts];
+    const existingIds = new Set(workouts.map(w => w.id));
+    let added = 0;
+    data.forEach(w => { if (w.id && !existingIds.has(w.id)) { merged.push(w); added++; } });
+    merged.sort((a, b) => b.date.localeCompare(a.date));
+    persist(merged);
+    showToast(`${added}件をインポート`);
+  };
+
+  return (
+    <div style={{ ...jp, background: C.bg, color: C.text, minHeight: "100vh", paddingBottom: 96, paddingTop: "env(safe-area-inset-top)" }}>
+      <GlobalStyles />
+      <Header workouts={workouts} />
+      <main style={{ padding: "0 20px", maxWidth: 560, margin: "0 auto" }}>
+        {!loaded ? (
+          <div style={{ ...jp, color: C.muted, padding: "48px 0", textAlign: "center" }}>読み込み中…</div>
+        ) : tab === "record" ? <RecordView onSave={addWorkout} showToast={showToast} />
+          : tab === "history" ? <HistoryView workouts={workouts} onDelete={removeWorkout} />
+          : tab === "progress" ? <ProgressView workouts={workouts} />
+          : <SyncView workouts={workouts} showToast={showToast} onImport={importJson} />}
+      </main>
+      <TabBar tab={tab} setTab={setTab} />
+      {toast && (
+        <div className="anim-in" style={{ position:"fixed", bottom:100, left:"50%", transform:"translateX(-50%)", background:C.text, color:C.bg, padding:"12px 20px", borderRadius:999, fontSize:14, fontWeight:500, zIndex:50, boxShadow:"0 8px 24px rgba(0,0,0,0.4)", maxWidth:"90%", textAlign:"center" }}>{toast}</div>
+      )}
+    </div>
+  );
+}
+
+function Header({ workouts }) {
+  const streak = useMemo(() => {
+    if (!workouts.length) return 0;
+    const dates = new Set(workouts.map((w) => w.date));
+    let s = 0; let d = new Date();
+    while (true) {
+      const iso = d.toISOString().slice(0, 10);
+      if (dates.has(iso)) { s++; d.setDate(d.getDate() - 1); }
+      else { if (s === 0 && iso === todayISO()) { d.setDate(d.getDate() - 1); continue; } break; }
+    }
+    return s;
+  }, [workouts]);
+
+  return (
+    <header style={{ padding: "28px 20px 20px", maxWidth: 560, margin: "0 auto" }}>
+      <div style={{ display:"flex", alignItems:"baseline", justifyContent:"space-between" }}>
+        <div>
+          <div style={{ ...display, fontSize: 11, color: C.accent, fontWeight: 700, letterSpacing: "0.2em" }}>TRAINING LOG</div>
+          <h1 style={{ ...display, fontSize: 32, fontWeight: 700, margin: "2px 0 0", lineHeight: 1 }}>鍛錬</h1>
+        </div>
+        <div style={{ textAlign: "right" }}>
+          <div style={{ ...num, fontSize: 36, color: C.accent, lineHeight: 1 }}>{streak}</div>
+          <div style={{ ...display, fontSize: 10, color: C.muted, letterSpacing: "0.2em", marginTop: 4 }}>DAY STREAK</div>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+function RecordView({ onSave, showToast }) {
+  const [date, setDate] = useState(todayISO());
+  const [exercises, setExercises] = useState([]);
+  const [notes, setNotes] = useState("");
+  const [pickerOpen, setPickerOpen] = useState(false);
+
+  const update = (i, field, val) => { const n = [...exercises]; n[i] = { ...n[i], [field]: val }; setExercises(n); };
+  const addExFromPicker = (name, category) => { setExercises((p) => [...p, { name, category, sets: [{ weight: "", reps: "" }] }]); setPickerOpen(false); };
+  const rmEx = (i) => setExercises(exercises.filter((_, x) => x !== i));
+  const addSet = (i) => { const n = [...exercises]; const last = n[i].sets[n[i].sets.length - 1] || { weight: "", reps: "" }; n[i].sets = [...n[i].sets, { weight: last.weight, reps: last.reps }]; setExercises(n); };
+  const rmSet = (i, j) => { const n = [...exercises]; n[i].sets = n[i].sets.filter((_, x) => x !== j); if (n[i].sets.length === 0) n[i].sets = [{ weight: "", reps: "" }]; setExercises(n); };
+  const setField = (i, j, field, val) => { const n = [...exercises]; n[i].sets[j] = { ...n[i].sets[j], [field]: val }; setExercises(n); };
+
+  const save = () => {
+    const cleaned = exercises.filter((e) => e.name.trim()).map((e) => ({
+      name: e.name.trim(),
+      category: e.category || "custom",
+      sets: e.sets.filter((s) => s.weight !== "" && s.reps !== "").map((s) => ({ weight: parseFloat(s.weight), reps: parseInt(s.reps) })),
+    })).filter((e) => e.sets.length > 0);
+    if (!cleaned.length) { showToast("種目と最低1セットを入力してください"); return; }
+    onSave({ id: Date.now().toString(), date, exercises: cleaned, notes: notes.trim(), createdAt: new Date().toISOString() });
+    setExercises([]); setNotes("");
+  };
+
+  return (
+    <div className="anim-in">
+      <Label>日付</Label>
+      <input type="date" value={date} onChange={(e) => setDate(e.target.value)} style={inputStyle} />
+
+      {exercises.length === 0 && (
+        <div style={{ background: C.surface, border: `1px dashed ${C.border}`, padding: "32px 20px", marginTop: 16, borderRadius: 14, textAlign: "center", color: C.muted }}>
+          <div style={{ ...display, fontSize: 36, color: C.border, marginBottom: 8 }}>🏋️</div>
+          <div style={{ ...jp, fontSize: 13 }}>下のボタンから種目を選択</div>
+        </div>
+      )}
+
+      {exercises.map((ex, i) => {
+        const cat = EXERCISE_LIBRARY[ex.category] || EXERCISE_LIBRARY.custom;
+        return (
+          <div key={i} style={{ background: C.surface, border: `1px solid ${C.border}`, padding: 16, marginTop: 16, borderRadius: 14 }}>
+            <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 12 }}>
+              <div style={{ ...num, fontSize: 18, color: C.accent, minWidth: 28 }}>{String(i + 1).padStart(2, "0")}</div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <input placeholder="種目名" value={ex.name} onChange={(e) => update(i, "name", e.target.value)} style={{ ...inputStyle, margin: 0, padding: "8px 12px", fontSize: 15, fontWeight: 500 }} />
+                <div style={{ ...display, display: "inline-block", marginTop: 6, padding: "2px 8px", background: `${cat.color}22`, color: cat.color, fontSize: 9, letterSpacing: "0.15em", fontWeight: 700, borderRadius: 4 }}>{cat.code}</div>
+              </div>
+              <button onClick={() => rmEx(i)} style={iconBtn}>×</button>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "32px 1fr 1fr 32px", gap: 8, alignItems: "center" }}>
+              <div style={{ ...display, fontSize: 10, color: C.muted, letterSpacing: "0.15em" }}>SET</div>
+              <div style={{ ...display, fontSize: 10, color: C.muted, letterSpacing: "0.15em" }}>KG</div>
+              <div style={{ ...display, fontSize: 10, color: C.muted, letterSpacing: "0.15em" }}>REPS</div>
+              <div />
+              {ex.sets.map((s, j) => (
+                <React.Fragment key={j}>
+                  <div style={{ ...num, fontSize: 16, color: C.text }}>{j + 1}</div>
+                  <input type="number" inputMode="decimal" placeholder="0" value={s.weight} onChange={(e) => setField(i, j, "weight", e.target.value)} style={cellStyle} />
+                  <input type="number" inputMode="numeric" placeholder="0" value={s.reps} onChange={(e) => setField(i, j, "reps", e.target.value)} style={cellStyle} />
+                  <button onClick={() => rmSet(i, j)} style={{ ...iconBtn, fontSize: 18 }}>−</button>
+                </React.Fragment>
+              ))}
+            </div>
+            <button onClick={() => addSet(i)} style={{ ...display, marginTop: 12, width: "100%", padding: 10, background: "transparent", color: C.accent, border: `1px dashed ${C.border}`, borderRadius: 10, fontSize: 12, letterSpacing: "0.15em", fontWeight: 700, cursor: "pointer" }}>+ SET 追加</button>
+          </div>
+        );
+      })}
+
+      <button onClick={() => setPickerOpen(true)} style={{ ...display, width: "100%", padding: 14, marginTop: 12, background: "transparent", color: C.text, border: `1px solid ${C.border}`, borderRadius: 12, fontSize: 13, fontWeight: 700, letterSpacing: "0.15em", cursor: "pointer" }}>+ 種目を追加</button>
+
+      <Label style={{ marginTop: 24 }}>メモ（任意）</Label>
+      <textarea placeholder="フォームの気づき、体調、次回の目標など" value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} style={{ ...inputStyle, resize: "none", lineHeight: 1.5 }} />
+
+      <button onClick={save} style={{ ...display, width: "100%", padding: 16, marginTop: 20, background: C.accent, color: C.bg, border: "none", borderRadius: 12, fontSize: 15, fontWeight: 700, letterSpacing: "0.2em", cursor: "pointer" }}>記録を保存</button>
+
+      <ExercisePicker open={pickerOpen} onClose={() => setPickerOpen(false)} onSelect={addExFromPicker} />
+    </div>
+  );
+}
+
+function ExercisePicker({ open, onClose, onSelect }) {
+  const [category, setCategory] = useState("chest");
+  const [customName, setCustomName] = useState("");
+  if (!open) return null;
+  const cat = EXERCISE_LIBRARY[category];
+  const handleCustom = () => { const name = customName.trim(); if (!name) return; onSelect(name, "custom"); setCustomName(""); };
+
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)", WebkitBackdropFilter: "blur(4px)", zIndex: 100, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
+      <div onClick={(e) => e.stopPropagation()} className="anim-in" style={{ background: C.bg, width: "100%", maxWidth: 560, maxHeight: "85vh", borderRadius: "20px 20px 0 0", border: `1px solid ${C.border}`, borderBottom: "none", display: "flex", flexDirection: "column", paddingBottom: "env(safe-area-inset-bottom)" }}>
+        <div style={{ display: "flex", justifyContent: "center", padding: "10px 0 4px" }}>
+          <div style={{ width: 40, height: 4, background: C.border, borderRadius: 2 }} />
+        </div>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 20px 16px", borderBottom: `1px solid ${C.border}` }}>
+          <div style={{ ...display, fontSize: 16, fontWeight: 700, letterSpacing: "0.05em" }}>種目を選択</div>
+          <button onClick={onClose} style={{ background: "transparent", border: "none", color: C.muted, fontSize: 24, cursor: "pointer", padding: 0, lineHeight: 1 }}>×</button>
+        </div>
+        <div style={{ display: "flex", gap: 8, overflowX: "auto", padding: "14px 20px", borderBottom: `1px solid ${C.border}` }} className="no-scroll">
+          {Object.entries(EXERCISE_LIBRARY).map(([k, v]) => {
+            const active = category === k;
+            return (
+              <button key={k} onClick={() => setCategory(k)} style={{ ...jp, whiteSpace: "nowrap", padding: "8px 16px", background: active ? v.color : "transparent", color: active ? C.bg : C.text, border: `1px solid ${active ? v.color : C.border}`, borderRadius: 999, fontSize: 13, fontWeight: active ? 700 : 500, cursor: "pointer", flexShrink: 0 }}>{v.label}</button>
+            );
+          })}
+        </div>
+        <div style={{ flex: 1, overflowY: "auto", padding: "16px 20px 24px" }}>
+          {category === "custom" ? (
+            <div>
+              <Label>種目名を入力</Label>
+              <input autoFocus value={customName} onChange={(e) => setCustomName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleCustom()} placeholder="例：ケーブルフライ" style={inputStyle} />
+              <button onClick={handleCustom} disabled={!customName.trim()} style={{ ...display, width: "100%", padding: 14, marginTop: 12, background: customName.trim() ? C.accent : C.surface, color: customName.trim() ? C.bg : C.muted, border: "none", borderRadius: 10, fontSize: 13, fontWeight: 700, letterSpacing: "0.2em", cursor: customName.trim() ? "pointer" : "not-allowed" }}>追加</button>
+            </div>
+          ) : (
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+              {cat.items.map((name) => (
+                <button key={name} onClick={() => onSelect(name, category)} style={{ ...jp, padding: "16px 12px", background: C.surface, color: C.text, border: `1px solid ${C.border}`, borderRadius: 12, fontSize: 13, fontWeight: 500, cursor: "pointer", textAlign: "left", lineHeight: 1.4, display: "flex", alignItems: "center", gap: 10, minHeight: 56 }}>
+                  <div style={{ width: 4, alignSelf: "stretch", background: cat.color, borderRadius: 2, flexShrink: 0 }} />
+                  <span style={{ flex: 1 }}>{name}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function HistoryView({ workouts, onDelete }) {
+  const [expanded, setExpanded] = useState(null);
+  if (!workouts.length) {
+    return (
+      <div style={{ padding: "80px 20px", textAlign: "center", color: C.muted }} className="anim-in">
+        <div style={{ ...display, fontSize: 48, color: C.border, marginBottom: 12 }}>∅</div>
+        <div>まだ記録がありません</div>
+        <div style={{ fontSize: 13, marginTop: 6 }}>「記録」タブから始めましょう</div>
+      </div>
+    );
+  }
+  const totalSessions = workouts.length;
+  const totalVol = workouts.reduce((s, w) => s + w.exercises.reduce((s2, e) => s2 + totalVolume(e), 0), 0);
+
+  return (
+    <div className="anim-in">
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 20 }}>
+        <Stat label="SESSIONS" value={totalSessions} />
+        <Stat label="TOTAL VOLUME" value={`${Math.round(totalVol).toLocaleString()}`} suffix="kg" />
+      </div>
+      {workouts.map((w) => {
+        const d = fmtDate(w.date);
+        const vol = w.exercises.reduce((s, e) => s + totalVolume(e), 0);
+        const isOpen = expanded === w.id;
+        return (
+          <div key={w.id} style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, marginBottom: 10, overflow: "hidden" }}>
+            <button onClick={() => setExpanded(isOpen ? null : w.id)} style={{ width: "100%", padding: 16, background: "transparent", border: "none", color: C.text, textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", gap: 14 }}>
+              <div style={{ minWidth: 52 }}>
+                <div style={{ ...num, fontSize: 24, color: C.accent, lineHeight: 1 }}>{d.d}</div>
+                <div style={{ ...display, fontSize: 10, color: C.muted, letterSpacing: "0.1em", marginTop: 3 }}>{d.y}.{String(d.m).padStart(2, "0")} {d.wd}</div>
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ ...jp, fontSize: 14, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{w.exercises.map((e) => e.name).join(" · ")}</div>
+                <div style={{ ...mono, fontSize: 11, color: C.muted, marginTop: 4 }}>{w.exercises.length}種目 · {Math.round(vol).toLocaleString()}kg</div>
+              </div>
+              <div style={{ color: C.muted, fontSize: 18, transform: isOpen ? "rotate(90deg)" : "none", transition: "transform 200ms" }}>›</div>
+            </button>
+            {isOpen && (
+              <div style={{ padding: "0 16px 16px", borderTop: `1px solid ${C.border}` }} className="anim-in">
+                {w.exercises.map((ex, i) => {
+                  const cat = EXERCISE_LIBRARY[ex.category] || EXERCISE_LIBRARY.custom;
+                  return (
+                    <div key={i} style={{ padding: "12px 0", borderBottom: i < w.exercises.length - 1 ? `1px solid ${C.border}` : "none" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                        <div style={{ width: 3, height: 16, background: cat.color, borderRadius: 2 }} />
+                        <div style={{ ...jp, fontSize: 14, fontWeight: 700 }}>{ex.name}</div>
+                        <div style={{ ...display, padding: "1px 6px", background: `${cat.color}22`, color: cat.color, fontSize: 9, letterSpacing: "0.1em", fontWeight: 700, borderRadius: 3 }}>{cat.code}</div>
+                      </div>
+                      {ex.sets.map((s, j) => (
+                        <div key={j} style={{ ...mono, fontSize: 13, color: C.muted, display: "flex", gap: 16 }}>
+                          <span style={{ color: C.accent, minWidth: 28 }}>#{j + 1}</span>
+                          <span style={{ color: C.text }}>{s.weight}kg × {s.reps}回</span>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })}
+                {w.notes && (
+                  <div style={{ padding: "12px 0", borderTop: `1px solid ${C.border}` }}>
+                    <div style={{ ...display, fontSize: 10, color: C.muted, letterSpacing: "0.15em", marginBottom: 6 }}>NOTE</div>
+                    <div style={{ fontSize: 13, color: C.text, whiteSpace: "pre-wrap", lineHeight: 1.5 }}>{w.notes}</div>
+                  </div>
+                )}
+                <button onClick={() => { if (confirm("この記録を削除しますか？")) onDelete(w.id); }} style={{ ...display, marginTop: 10, padding: "8px 14px", background: "transparent", border: `1px solid ${C.danger}`, color: C.danger, borderRadius: 8, fontSize: 11, letterSpacing: "0.15em", fontWeight: 700, cursor: "pointer" }}>削除</button>
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function ProgressView({ workouts }) {
+  const exerciseNames = useMemo(() => {
+    const set = new Set();
+    workouts.forEach((w) => w.exercises.forEach((e) => set.add(e.name)));
+    return Array.from(set);
+  }, [workouts]);
+  const [selected, setSelected] = useState(null);
+  const [metric, setMetric] = useState("max");
+
+  useEffect(() => {
+    if (!selected && exerciseNames.length) setSelected(exerciseNames[0]);
+    if (selected && !exerciseNames.includes(selected)) setSelected(exerciseNames[0] || null);
+  }, [exerciseNames, selected]);
+
+  if (!workouts.length) {
+    return (
+      <div style={{ padding: "80px 20px", textAlign: "center", color: C.muted }} className="anim-in">
+        <div style={{ ...display, fontSize: 48, color: C.border, marginBottom: 12 }}>📈</div>
+        <div>記録が増えるとグラフが表示されます</div>
+      </div>
+    );
+  }
+
+  const data = useMemo(() => {
+    if (!selected) return [];
+    const points = [];
+    [...workouts].sort((a, b) => a.date.localeCompare(b.date)).forEach((w) => {
+      const ex = w.exercises.find((e) => e.name === selected);
+      if (!ex) return;
+      const maxW = Math.max(...ex.sets.map((s) => s.weight || 0));
+      const vol = ex.sets.reduce((s, x) => s + (x.weight || 0) * (x.reps || 0), 0);
+      const e1rm = Math.max(...ex.sets.map((s) => (s.weight || 0) * (1 + (s.reps || 0) / 30)));
+      points.push({ date: w.date.slice(5).replace("-", "/"), fullDate: w.date, max: maxW, volume: Math.round(vol), e1rm: Math.round(e1rm * 10) / 10 });
+    });
+    return points;
+  }, [workouts, selected]);
+
+  const metricInfo = {
+    max: { key: "max", label: "最大重量", unit: "kg", desc: "そのセッションで挙げた最大重量" },
+    volume: { key: "volume", label: "総ボリューム", unit: "kg", desc: "重量 × レップの総和" },
+    e1rm: { key: "e1rm", label: "推定1RM", unit: "kg", desc: "Epley式で推定した1回挙上限界" },
+  };
+  const m = metricInfo[metric];
+
+  const stats = useMemo(() => {
+    if (!data.length) return null;
+    const vals = data.map((d) => d[m.key]);
+    return { latest: vals[vals.length - 1], best: Math.max(...vals), delta: vals.length > 1 ? vals[vals.length - 1] - vals[0] : 0 };
+  }, [data, m.key]);
+
+  return (
+    <div className="anim-in">
+      <Label>種目</Label>
+      <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4 }} className="no-scroll">
+        {exerciseNames.map((name) => {
+          const active = selected === name;
+          return (
+            <button key={name} onClick={() => setSelected(name)} style={{ ...jp, whiteSpace: "nowrap", padding: "8px 14px", background: active ? C.accent : C.surface, color: active ? C.bg : C.text, border: `1px solid ${active ? C.accent : C.border}`, borderRadius: 999, fontSize: 13, fontWeight: active ? 700 : 500, cursor: "pointer", flexShrink: 0 }}>{name}</button>
+          );
+        })}
+      </div>
+      <Label style={{ marginTop: 20 }}>指標</Label>
+      <div style={{ display: "flex", gap: 6, background: C.surface, padding: 4, borderRadius: 10, border: `1px solid ${C.border}` }}>
+        {Object.entries(metricInfo).map(([k, v]) => {
+          const active = metric === k;
+          return (
+            <button key={k} onClick={() => setMetric(k)} style={{ ...display, flex: 1, padding: "8px 4px", background: active ? C.bg : "transparent", color: active ? C.accent : C.muted, border: "none", borderRadius: 7, fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", cursor: "pointer" }}>{v.label}</button>
+          );
+        })}
+      </div>
+      {stats && (
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginTop: 16 }}>
+          <Stat label="LATEST" value={stats.latest} suffix={m.unit} />
+          <Stat label="BEST" value={stats.best} suffix={m.unit} />
+          <Stat label="CHANGE" value={(stats.delta >= 0 ? "+" : "") + Math.round(stats.delta * 10) / 10} suffix={m.unit} />
+        </div>
+      )}
+      <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, padding: "16px 8px 8px 0", marginTop: 16, height: 280 }}>
+        {data.length < 2 ? (
+          <div style={{ ...jp, height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: C.muted, fontSize: 13, padding: 16, textAlign: "center" }}>グラフ表示には2回以上の記録が必要です<br />（現在 {data.length} 回）</div>
+        ) : (
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={data} margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
+              <CartesianGrid stroke={C.border} strokeDasharray="2 4" vertical={false} />
+              <XAxis dataKey="date" stroke={C.muted} tick={{ fontSize: 10, fill: C.muted, fontFamily: "'JetBrains Mono', monospace" }} tickLine={false} axisLine={{ stroke: C.border }} />
+              <YAxis stroke={C.muted} tick={{ fontSize: 10, fill: C.muted, fontFamily: "'JetBrains Mono', monospace" }} tickLine={false} axisLine={false} width={40} />
+              <Tooltip contentStyle={{ background: C.bg, border: `1px solid ${C.accent}`, borderRadius: 8, fontSize: 12, fontFamily: "'Noto Sans JP', sans-serif" }} labelStyle={{ color: C.muted, fontSize: 11 }} itemStyle={{ color: C.accent }} formatter={(value) => [`${value} ${m.unit}`, m.label]} />
+              <Line type="monotone" dataKey={m.key} stroke={C.accent} strokeWidth={2.5} dot={{ fill: C.accent, r: 4, strokeWidth: 0 }} activeDot={{ r: 6, fill: C.accent, stroke: C.bg, strokeWidth: 2 }} />
+            </LineChart>
+          </ResponsiveContainer>
+        )}
+      </div>
+      <div style={{ ...jp, fontSize: 12, color: C.muted, marginTop: 12, lineHeight: 1.6 }}>{m.desc}</div>
+    </div>
+  );
+}
+
+function SyncView({ workouts, showToast, onImport }) {
+  const buildNotionMd = () => {
+    if (!workouts.length) return "";
+    return workouts.map((w) => {
+      const header = `## 🏋️ ${w.date}`;
+      const body = w.exercises.map((ex) => {
+        const sets = ex.sets.map((s, i) => `  ${i + 1}. ${s.weight}kg × ${s.reps}回`).join("\n");
+        return `### ${ex.name}\n${sets}`;
+      }).join("\n\n");
+      const note = w.notes ? `\n\n> 📝 ${w.notes}` : "";
+      return `${header}\n\n${body}${note}`;
+    }).join("\n\n---\n\n");
+  };
+
+  const copyNotion = async () => {
+    const md = buildNotionMd();
+    if (!md) { showToast("記録がありません"); return; }
+    try { await navigator.clipboard.writeText(md); showToast("Notion 用 Markdown をコピーしました"); }
+    catch { showToast("コピーに失敗しました"); }
+  };
+
+  const downloadIcs = () => {
+    if (!workouts.length) { showToast("記録がありません"); return; }
+    const esc = (s) => String(s).replace(/\\/g, "\\\\").replace(/\n/g, "\\n").replace(/,/g, "\\,").replace(/;/g, "\\;");
+    const events = workouts.map((w) => {
+      const d = w.date.replace(/-/g, "");
+      const summary = `トレーニング (${w.exercises.length}種目)`;
+      const desc = w.exercises.map((e) => {
+        const v = Math.round(totalVolume(e));
+        const setsStr = e.sets.map((s) => `${s.weight}kg×${s.reps}`).join(", ");
+        return `${e.name}: ${setsStr} (計${v}kg)`;
+      }).join("\\n");
+      const fullDesc = w.notes ? `${desc}\\n\\n${esc(w.notes)}` : desc;
+      return ["BEGIN:VEVENT", `UID:${w.id}@kintore-log`, `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, "").split(".")[0]}Z`, `DTSTART;VALUE=DATE:${d}`, `SUMMARY:${esc(summary)}`, `DESCRIPTION:${fullDesc}`, "END:VEVENT"].join("\r\n");
+    });
+    const ics = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Kintore//JP//EN", "CALSCALE:GREGORIAN", ...events, "END:VCALENDAR"].join("\r\n");
+    downloadFile(ics, `workouts_${todayISO()}.ics`, "text/calendar;charset=utf-8");
+    showToast("カレンダーファイルをダウンロード");
+  };
+
+  const exportJson = () => {
+    if (!workouts.length) { showToast("記録がありません"); return; }
+    downloadFile(JSON.stringify(workouts, null, 2), `workouts_backup_${todayISO()}.json`, "application/json");
+    showToast("バックアップをダウンロード");
+  };
+
+  const downloadFile = (content, filename, type) => {
+    const blob = new Blob([content], { type });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = filename; a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImport = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try { const data = JSON.parse(ev.target.result); onImport(data); }
+      catch { showToast("ファイルを読み込めません"); }
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  };
+
+  return (
+    <div className="anim-in">
+      <div style={{ ...display, fontSize: 11, color: C.muted, letterSpacing: "0.2em", margin: "8px 0 16px" }}>EXPORT / 連携</div>
+      <SyncCard icon="N" title="Notion" desc="全記録を Markdown でクリップボードへコピー。Notionに貼り付けると見出し・箇条書きがそのまま反映されます。" action="Markdown をコピー" onClick={copyNotion} />
+      <SyncCard icon="📅" title="Google カレンダー" desc=".ics ファイルをダウンロード。Googleカレンダー → 設定 → インポート から取り込むと、トレーニング日がイベントとして追加されます。" action="ICS をダウンロード" onClick={downloadIcs} />
+      <SyncCard icon="{ }" title="バックアップ (JSON)" desc="生データを JSON でエクスポート。機種変更や復元用に。" action="JSON をダウンロード" onClick={exportJson} />
+
+      <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, padding: 18, marginBottom: 12 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 10 }}>
+          <div style={{ ...num, width: 40, height: 40, borderRadius: 10, background: C.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, color: C.accent }}>↑</div>
+          <div style={{ ...display, fontSize: 18, fontWeight: 700 }}>JSON 復元</div>
+        </div>
+        <div style={{ ...jp, fontSize: 13, color: C.muted, lineHeight: 1.6, marginBottom: 14 }}>以前にエクスポートしたJSONファイルから記録を復元します。</div>
+        <label style={{ ...display, display: "block", width: "100%", padding: 12, background: C.bg, color: C.accent, border: `1px dashed ${C.accent}66`, borderRadius: 10, fontSize: 13, fontWeight: 700, letterSpacing: "0.15em", cursor: "pointer", textAlign: "center" }}>
+          ファイルを選択
+          <input type="file" accept="application/json,.json" onChange={handleImport} style={{ display: "none" }} />
+        </label>
+      </div>
+    </div>
+  );
+}
+
+function SyncCard({ icon, title, desc, action, onClick }) {
+  return (
+    <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, padding: 18, marginBottom: 12 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 10 }}>
+        <div style={{ ...num, width: 40, height: 40, borderRadius: 10, background: C.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, color: C.accent }}>{icon}</div>
+        <div style={{ ...display, fontSize: 18, fontWeight: 700 }}>{title}</div>
+      </div>
+      <div style={{ ...jp, fontSize: 13, color: C.muted, lineHeight: 1.6, marginBottom: 14 }}>{desc}</div>
+      <button onClick={onClick} style={{ ...display, width: "100%", padding: 12, background: C.accent, color: C.bg, border: "none", borderRadius: 10, fontSize: 13, fontWeight: 700, letterSpacing: "0.15em", cursor: "pointer" }}>{action}</button>
+    </div>
+  );
+}
+
+function TabBar({ tab, setTab }) {
+  const tabs = [
+    { id: "record", label: "記録", code: "LOG" },
+    { id: "history", label: "履歴", code: "HIST" },
+    { id: "progress", label: "推移", code: "CHART" },
+    { id: "sync", label: "連携", code: "SYNC" },
+  ];
+  return (
+    <nav style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "rgba(10,10,10,0.92)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)", borderTop: `1px solid ${C.border}`, padding: "10px 8px calc(10px + env(safe-area-inset-bottom))", display: "flex", justifyContent: "space-around", zIndex: 40 }}>
+      {tabs.map((t) => {
+        const active = tab === t.id;
+        return (
+          <button key={t.id} onClick={() => setTab(t.id)} style={{ background: "transparent", border: "none", color: active ? C.accent : C.muted, padding: "6px 10px", cursor: "pointer", textAlign: "center", flex: 1 }}>
+            <div style={{ ...display, fontSize: 10, letterSpacing: "0.2em", fontWeight: 700 }}>{t.code}</div>
+            <div style={{ ...jp, fontSize: 12, fontWeight: 500, marginTop: 2 }}>{t.label}</div>
+          </button>
+        );
+      })}
+    </nav>
+  );
+}
+
+function Label({ children, style }) {
+  return <div style={{ ...display, fontSize: 10, color: C.muted, letterSpacing: "0.2em", fontWeight: 700, margin: "16px 0 8px", ...style }}>{children}</div>;
+}
+
+function Stat({ label, value, suffix }) {
+  return (
+    <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 12, padding: 14 }}>
+      <div style={{ ...display, fontSize: 9, color: C.muted, letterSpacing: "0.2em" }}>{label}</div>
+      <div style={{ ...num, fontSize: 26, color: C.text, lineHeight: 1.1, marginTop: 6 }}>
+        {value}
+        {suffix && <span style={{ ...display, fontSize: 12, color: C.muted, marginLeft: 4, fontWeight: 500 }}>{suffix}</span>}
+      </div>
+    </div>
+  );
+}
+
+const inputStyle = { fontFamily: "'Noto Sans JP', -apple-system, sans-serif", width: "100%", padding: "12px 14px", background: C.surface, border: `1px solid ${C.border}`, color: C.text, borderRadius: 10, fontSize: 15, outline: "none", boxSizing: "border-box" };
+const cellStyle = { fontFamily: "'Archivo Black', Impact, sans-serif", width: "100%", padding: "10px 12px", background: C.bg, border: `1px solid ${C.border}`, color: C.text, borderRadius: 8, fontSize: 17, outline: "none", textAlign: "center", boxSizing: "border-box" };
+const iconBtn = { background: "transparent", border: `1px solid ${C.border}`, color: C.muted, width: 32, height: 32, borderRadius: 8, fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 };
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

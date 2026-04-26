@@ -1,601 +1,873 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="apple-mobile-web-app-title" content="鍛錬" />
-<meta name="theme-color" content="#0a0a0a" />
-<link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%230a0a0a'/><text x='50%25' y='54%25' font-family='sans-serif' font-size='72' font-weight='900' fill='%23d4ff00' text-anchor='middle' dominant-baseline='middle'>鍛</text></svg>" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="鍛錬">
+<meta name="theme-color" content="#0a0a0a">
+<link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%230a0a0a'/><text x='50%25' y='54%25' font-family='sans-serif' font-size='100' font-weight='900' fill='%23d4ff00' text-anchor='middle' dominant-baseline='middle'>鍛</text></svg>">
 <title>鍛錬 / Training Log</title>
-<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script crossorigin src="https://unpkg.com/recharts@2.12.7/umd/Recharts.js"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <style>
-  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html, body, #root { background: #0a0a0a; margin: 0; padding: 0; min-height: 100vh; }
-  body { overscroll-behavior-y: none; }
+  :root {
+    --bg: #0a0a0a; --surface: #141414; --border: #262626;
+    --accent: #d4ff00; --text: #fafafa; --muted: #888; --danger: #ff4d4d;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+  html, body {
+    background: var(--bg); color: var(--text); min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "ヒラギノ角ゴ ProN", "Yu Gothic", sans-serif;
+    overscroll-behavior-y: none;
+  }
+  body { padding-top: env(safe-area-inset-top); padding-bottom: 96px; }
+  button { font-family: inherit; cursor: pointer; }
+  input, textarea, button { font-family: inherit; -webkit-appearance: none; }
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  input[type=number] { -moz-appearance: textfield; }
+  .no-scroll::-webkit-scrollbar { display: none; }
+  .no-scroll { scrollbar-width: none; -ms-overflow-style: none; }
+
+  .display { letter-spacing: 0.02em; font-weight: 700; }
+  .num { font-family: "Helvetica Neue", Impact, sans-serif; font-weight: 900; }
+  .mono { font-family: "SF Mono", Menlo, Consolas, monospace; }
+
+  header.app-header { padding: 28px 20px 20px; max-width: 560px; margin: 0 auto; display: flex; align-items: baseline; justify-content: space-between; }
+  .brand-eyebrow { font-size: 11px; color: var(--accent); font-weight: 700; letter-spacing: 0.2em; }
+  .brand-title { font-size: 32px; font-weight: 900; margin-top: 2px; line-height: 1; }
+  .streak-num { font-size: 36px; color: var(--accent); line-height: 1; }
+  .streak-label { font-size: 10px; color: var(--muted); letter-spacing: 0.2em; margin-top: 4px; font-weight: 700; }
+
+  main { padding: 0 20px; max-width: 560px; margin: 0 auto; }
+
+  .label { font-size: 10px; color: var(--muted); letter-spacing: 0.2em; font-weight: 700; margin: 16px 0 8px; }
+  .input { width: 100%; padding: 12px 14px; background: var(--surface); border: 1px solid var(--border); color: var(--text); border-radius: 10px; font-size: 15px; outline: none; }
+  textarea.input { resize: none; line-height: 1.5; }
+  .input:focus { border-color: var(--accent); }
+
+  .empty { background: var(--surface); border: 1px dashed var(--border); padding: 32px 20px; margin-top: 16px; border-radius: 14px; text-align: center; color: var(--muted); }
+  .empty-icon { font-size: 36px; color: var(--border); margin-bottom: 8px; }
+
+  .ex-card { background: var(--surface); border: 1px solid var(--border); padding: 16px; margin-top: 16px; border-radius: 14px; }
+  .ex-head { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; }
+  .ex-num { font-size: 18px; color: var(--accent); min-width: 28px; }
+  .ex-name-wrap { flex: 1; min-width: 0; }
+  .ex-name { width: 100%; padding: 8px 12px; background: var(--bg); border: 1px solid var(--border); color: var(--text); border-radius: 8px; font-size: 15px; font-weight: 500; outline: none; }
+  .cat-tag { display: inline-block; margin-top: 6px; padding: 2px 8px; font-size: 9px; letter-spacing: 0.15em; font-weight: 700; border-radius: 4px; }
+
+  .icon-btn { background: transparent; border: 1px solid var(--border); color: var(--muted); width: 32px; height: 32px; border-radius: 8px; font-size: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+  .sets-grid { display: grid; grid-template-columns: 32px 1fr 1fr 32px; gap: 8px; align-items: center; }
+  .set-head { font-size: 10px; color: var(--muted); letter-spacing: 0.15em; font-weight: 700; }
+  .set-num { font-size: 16px; color: var(--text); }
+  .cell { width: 100%; padding: 10px 12px; background: var(--bg); border: 1px solid var(--border); color: var(--text); border-radius: 8px; font-size: 17px; outline: none; text-align: center; font-weight: 700; }
+  .cell:focus { border-color: var(--accent); }
+
+  .add-set-btn { margin-top: 12px; width: 100%; padding: 10px; background: transparent; color: var(--accent); border: 1px dashed var(--border); border-radius: 10px; font-size: 12px; letter-spacing: 0.15em; font-weight: 700; }
+  .add-ex-btn { width: 100%; padding: 14px; margin-top: 12px; background: transparent; color: var(--text); border: 1px solid var(--border); border-radius: 12px; font-size: 13px; font-weight: 700; letter-spacing: 0.15em; }
+  .save-btn { width: 100%; padding: 16px; margin-top: 20px; background: var(--accent); color: var(--bg); border: none; border-radius: 12px; font-size: 15px; font-weight: 700; letter-spacing: 0.2em; }
+  .save-btn:active { background: #b8e000; }
+
+  .stats-grid { display: grid; gap: 10px; margin-bottom: 20px; }
+  .stats-2 { grid-template-columns: 1fr 1fr; }
+  .stats-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px; }
+  .stat-label { font-size: 9px; color: var(--muted); letter-spacing: 0.2em; font-weight: 700; }
+  .stat-value { font-size: 26px; color: var(--text); line-height: 1.1; margin-top: 6px; }
+  .stat-suffix { font-size: 12px; color: var(--muted); margin-left: 4px; font-weight: 500; }
+
+  .session-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; margin-bottom: 10px; overflow: hidden; }
+  .session-head { width: 100%; padding: 16px; background: transparent; border: none; color: var(--text); text-align: left; display: flex; align-items: center; gap: 14px; }
+  .session-date { min-width: 52px; }
+  .session-date-d { font-size: 24px; color: var(--accent); line-height: 1; }
+  .session-date-meta { font-size: 10px; color: var(--muted); letter-spacing: 0.1em; margin-top: 3px; font-weight: 700; }
+  .session-titles { flex: 1; min-width: 0; }
+  .session-title { font-size: 14px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .session-meta { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .chevron { color: var(--muted); font-size: 18px; transition: transform 200ms; }
+  .session-card.open .chevron { transform: rotate(90deg); }
+  .session-body { padding: 0 16px 16px; border-top: 1px solid var(--border); }
+
+  .ex-detail { padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .ex-detail:last-of-type { border-bottom: none; }
+  .ex-detail-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .cat-bar { width: 3px; height: 16px; border-radius: 2px; }
+  .ex-detail-name { font-size: 14px; font-weight: 700; }
+  .set-line { font-size: 13px; color: var(--muted); display: flex; gap: 16px; }
+  .set-line-num { color: var(--accent); min-width: 28px; }
+  .set-line-val { color: var(--text); }
+
+  .note-block { padding: 12px 0; border-top: 1px solid var(--border); }
+  .note-label { font-size: 10px; color: var(--muted); letter-spacing: 0.15em; font-weight: 700; margin-bottom: 6px; }
+  .note-text { font-size: 13px; color: var(--text); white-space: pre-wrap; line-height: 1.5; }
+
+  .delete-btn { margin-top: 10px; padding: 8px 14px; background: transparent; border: 1px solid var(--danger); color: var(--danger); border-radius: 8px; font-size: 11px; letter-spacing: 0.15em; font-weight: 700; }
+
+  .chip-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+  .chip { white-space: nowrap; padding: 8px 14px; background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 999px; font-size: 13px; font-weight: 500; flex-shrink: 0; }
+  .chip.active { background: var(--accent); color: var(--bg); border-color: var(--accent); font-weight: 700; }
+
+  .seg-row { display: flex; gap: 6px; background: var(--surface); padding: 4px; border-radius: 10px; border: 1px solid var(--border); }
+  .seg { flex: 1; padding: 8px 4px; background: transparent; color: var(--muted); border: none; border-radius: 7px; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; }
+  .seg.active { background: var(--bg); color: var(--accent); }
+
+  .chart-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 12px; margin-top: 16px; height: 280px; }
+  .chart-empty { height: 100%; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 13px; text-align: center; padding: 16px; line-height: 1.6; }
+  .chart-svg { width: 100%; height: 100%; display: block; }
+  .metric-desc { font-size: 12px; color: var(--muted); margin-top: 12px; line-height: 1.6; }
+
+  .sync-eyebrow { font-size: 11px; color: var(--muted); letter-spacing: 0.2em; font-weight: 700; margin: 8px 0 16px; }
+  .sync-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px; margin-bottom: 12px; }
+  .sync-head { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .sync-icon { width: 40px; height: 40px; border-radius: 10px; background: var(--bg); display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--accent); font-weight: 900; }
+  .sync-title { font-size: 18px; font-weight: 700; }
+  .sync-desc { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 14px; }
+  .sync-btn { width: 100%; padding: 12px; background: var(--accent); color: var(--bg); border: none; border-radius: 10px; font-size: 13px; font-weight: 700; letter-spacing: 0.15em; }
+  .sync-btn-import { display: block; padding: 12px; background: var(--bg); color: var(--accent); border: 1px dashed rgba(212, 255, 0, 0.4); border-radius: 10px; font-size: 13px; font-weight: 700; letter-spacing: 0.15em; text-align: center; cursor: pointer; }
+  .sync-btn-import input { display: none; }
+
+  nav.tabbar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(10, 10, 10, 0.92); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border-top: 1px solid var(--border); padding: 10px 8px calc(10px + env(safe-area-inset-bottom)); display: flex; justify-content: space-around; z-index: 40; }
+  .tab { background: transparent; border: none; color: var(--muted); padding: 6px 10px; text-align: center; flex: 1; }
+  .tab.active { color: var(--accent); }
+  .tab-code { font-size: 10px; letter-spacing: 0.2em; font-weight: 700; }
+  .tab-label { font-size: 12px; font-weight: 500; margin-top: 2px; }
+
+  .toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 12px 20px; border-radius: 999px; font-size: 14px; font-weight: 500; z-index: 50; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4); max-width: 90%; text-align: center; animation: slideUp 220ms ease-out both; }
+
+  .sheet-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); z-index: 100; display: flex; align-items: flex-end; justify-content: center; }
+  .sheet { background: var(--bg); width: 100%; max-width: 560px; max-height: 85vh; border-radius: 20px 20px 0 0; border: 1px solid var(--border); border-bottom: none; display: flex; flex-direction: column; padding-bottom: env(safe-area-inset-bottom); animation: slideUp 220ms ease-out both; }
+  .sheet-handle { display: flex; justify-content: center; padding: 10px 0 4px; }
+  .sheet-handle-bar { width: 40px; height: 4px; background: var(--border); border-radius: 2px; }
+  .sheet-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 20px 16px; border-bottom: 1px solid var(--border); }
+  .sheet-title { font-size: 16px; font-weight: 700; letter-spacing: 0.05em; }
+  .sheet-close { background: transparent; border: none; color: var(--muted); font-size: 24px; padding: 0; line-height: 1; }
+  .sheet-cats { display: flex; gap: 8px; overflow-x: auto; padding: 14px 20px; border-bottom: 1px solid var(--border); }
+  .sheet-body { flex: 1; overflow-y: auto; padding: 16px 20px 24px; }
+
+  .ex-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .ex-pick { padding: 16px 12px; background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 12px; font-size: 13px; font-weight: 500; text-align: left; line-height: 1.4; display: flex; align-items: stretch; gap: 10px; min-height: 56px; }
+  .ex-pick-bar { width: 4px; border-radius: 2px; flex-shrink: 0; }
+  .ex-pick-name { flex: 1; align-self: center; }
+
+  @keyframes slideUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .anim-in { animation: slideUp 220ms ease-out both; }
 </style>
 </head>
 <body>
-<div id="root"></div>
+<div id="app"></div>
 
-<script type="text/babel" data-presets="react">
-const { useState, useEffect, useMemo } = React;
-const { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } = Recharts;
+<script>
+"use strict";
 
-const STORAGE_KEY = "workouts:all_v1";
+var STORAGE_KEY = "workouts:all_v1";
 
-// ---------- Exercise Library ----------
-const EXERCISE_LIBRARY = {
-  chest: { label: "胸", code: "CHEST", color: "#ff6b6b", items: ["ベンチプレス","インクラインベンチプレス","デクラインベンチプレス","ダンベルベンチプレス","インクラインダンベルプレス","ダンベルフライ","ディップス"] },
-  back: { label: "背中", code: "BACK", color: "#4ecdc4", items: ["デッドリフト","ベントオーバーロウ","ダンベルロウ","Tバーロウ","懸垂","シュラッグ"] },
-  shoulders: { label: "肩", code: "SHLDR", color: "#ffd93d", items: ["バーベルショルダープレス","ダンベルショルダープレス","アーノルドプレス","サイドレイズ","フロントレイズ","リアレイズ","アップライトロウ"] },
-  arms: { label: "腕", code: "ARMS", color: "#a78bfa", items: ["バーベルカール","ダンベルカール","ハンマーカール","プリーチャーカール","ナローベンチプレス","フレンチプレス","トライセプスエクステンション","キックバック"] },
-  legs: { label: "脚", code: "LEGS", color: "#34d399", items: ["バーベルスクワット","フロントスクワット","ブルガリアンスクワット","ルーマニアンデッドリフト","ランジ","ヒップスラスト","カーフレイズ"] },
-  core: { label: "体幹", code: "CORE", color: "#fb923c", items: ["アブローラー","ハンギングレッグレイズ","プランク","ロシアンツイスト","ケーブルクランチ"] },
-  custom: { label: "カスタム", code: "CUSTOM", color: "#888", items: [] },
+var LIB = {
+  chest:     { label: "胸",   code: "CHEST",  color: "#ff6b6b", items: ["ベンチプレス","インクラインベンチプレス","デクラインベンチプレス","ダンベルベンチプレス","インクラインダンベルプレス","ダンベルフライ","ディップス"] },
+  back:      { label: "背中", code: "BACK",   color: "#4ecdc4", items: ["デッドリフト","ベントオーバーロウ","ダンベルロウ","Tバーロウ","懸垂","シュラッグ"] },
+  shoulders: { label: "肩",   code: "SHLDR",  color: "#ffd93d", items: ["バーベルショルダープレス","ダンベルショルダープレス","アーノルドプレス","サイドレイズ","フロントレイズ","リアレイズ","アップライトロウ"] },
+  arms:      { label: "腕",   code: "ARMS",   color: "#a78bfa", items: ["バーベルカール","ダンベルカール","ハンマーカール","プリーチャーカール","ナローベンチプレス","フレンチプレス","トライセプスエクステンション","キックバック"] },
+  legs:      { label: "脚",   code: "LEGS",   color: "#34d399", items: ["バーベルスクワット","フロントスクワット","ブルガリアンスクワット","ルーマニアンデッドリフト","ランジ","ヒップスラスト","カーフレイズ"] },
+  core:      { label: "体幹", code: "CORE",   color: "#fb923c", items: ["アブローラー","ハンギングレッグレイズ","プランク","ロシアンツイスト","ケーブルクランチ"] },
+  custom:    { label: "カスタム", code: "CUSTOM", color: "#888", items: [] }
 };
 
-const C = { bg:"#0a0a0a", surface:"#141414", border:"#262626", accent:"#d4ff00", text:"#fafafa", muted:"#888", danger:"#ff4d4d" };
-const jp = { fontFamily: "'Noto Sans JP', -apple-system, sans-serif" };
-const display = { fontFamily: "'Oswald', -apple-system, sans-serif", letterSpacing: "0.02em" };
-const num = { fontFamily: "'Archivo Black', Impact, sans-serif" };
-const mono = { fontFamily: "'JetBrains Mono', Menlo, monospace" };
-
-const todayISO = () => { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); };
-const fmtDate = (iso) => { const [y, m, d] = iso.split("-"); const days = ["日","月","火","水","木","金","土"]; const dt = new Date(`${iso}T00:00:00`); return { m: parseInt(m), d: parseInt(d), y, wd: days[dt.getDay()] }; };
-const totalVolume = (ex) => ex.sets.reduce((s, x) => s + (x.weight || 0) * (x.reps || 0), 0);
-
-const GlobalStyles = () => (
-  <style>{`
-    @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Archivo+Black&family=Noto+Sans+JP:wght@400;500;700&family=JetBrains+Mono:wght@500&display=swap');
-    input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-    input[type=number] { -moz-appearance: textfield; }
-    .no-scroll { scrollbar-width: none; }
-    .no-scroll::-webkit-scrollbar { display: none; }
-    @keyframes slideUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-    .anim-in { animation: slideUp 220ms ease-out both; }
-  `}</style>
-);
-
-function App() {
-  const [tab, setTab] = useState("record");
-  const [workouts, setWorkouts] = useState([]);
-  const [loaded, setLoaded] = useState(false);
-  const [toast, setToast] = useState(null);
-
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setWorkouts(JSON.parse(raw));
-    } catch (e) { console.error(e); }
-    setLoaded(true);
-  }, []);
-
-  const persist = (data) => {
-    setWorkouts(data);
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
-    catch (e) { showToast("保存に失敗しました"); }
-  };
-
-  const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 2400); };
-
-  const addWorkout = (w) => {
-    const next = [w, ...workouts].sort((a, b) => b.date.localeCompare(a.date));
-    persist(next);
-    setTab("history");
-    showToast("記録を保存しました");
-  };
-
-  const removeWorkout = (id) => {
-    persist(workouts.filter((w) => w.id !== id));
-    showToast("記録を削除しました");
-  };
-
-  const importJson = (data) => {
-    if (!Array.isArray(data)) { showToast("不正なファイル形式"); return; }
-    const merged = [...workouts];
-    const existingIds = new Set(workouts.map(w => w.id));
-    let added = 0;
-    data.forEach(w => { if (w.id && !existingIds.has(w.id)) { merged.push(w); added++; } });
-    merged.sort((a, b) => b.date.localeCompare(a.date));
-    persist(merged);
-    showToast(`${added}件をインポート`);
-  };
-
-  return (
-    <div style={{ ...jp, background: C.bg, color: C.text, minHeight: "100vh", paddingBottom: 96, paddingTop: "env(safe-area-inset-top)" }}>
-      <GlobalStyles />
-      <Header workouts={workouts} />
-      <main style={{ padding: "0 20px", maxWidth: 560, margin: "0 auto" }}>
-        {!loaded ? (
-          <div style={{ ...jp, color: C.muted, padding: "48px 0", textAlign: "center" }}>読み込み中…</div>
-        ) : tab === "record" ? <RecordView onSave={addWorkout} showToast={showToast} />
-          : tab === "history" ? <HistoryView workouts={workouts} onDelete={removeWorkout} />
-          : tab === "progress" ? <ProgressView workouts={workouts} />
-          : <SyncView workouts={workouts} showToast={showToast} onImport={importJson} />}
-      </main>
-      <TabBar tab={tab} setTab={setTab} />
-      {toast && (
-        <div className="anim-in" style={{ position:"fixed", bottom:100, left:"50%", transform:"translateX(-50%)", background:C.text, color:C.bg, padding:"12px 20px", borderRadius:999, fontSize:14, fontWeight:500, zIndex:50, boxShadow:"0 8px 24px rgba(0,0,0,0.4)", maxWidth:"90%", textAlign:"center" }}>{toast}</div>
-      )}
-    </div>
-  );
+function todayISO() {
+  var d = new Date();
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().slice(0, 10);
 }
 
-function Header({ workouts }) {
-  const streak = useMemo(() => {
-    if (!workouts.length) return 0;
-    const dates = new Set(workouts.map((w) => w.date));
-    let s = 0; let d = new Date();
-    while (true) {
-      const iso = d.toISOString().slice(0, 10);
-      if (dates.has(iso)) { s++; d.setDate(d.getDate() - 1); }
-      else { if (s === 0 && iso === todayISO()) { d.setDate(d.getDate() - 1); continue; } break; }
+var state = {
+  workouts: [],
+  tab: "record",
+  draft: { date: todayISO(), exercises: [], notes: "" },
+  expandedId: null,
+  pickerOpen: false,
+  pickerCat: "chest",
+  customName: "",
+  selectedExercise: null,
+  metric: "max"
+};
+
+function load() {
+  try {
+    var raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) state.workouts = JSON.parse(raw);
+  } catch (e) {}
+}
+
+function persist() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state.workouts)); }
+  catch (e) { toast("保存に失敗しました"); }
+}
+
+function totalVolume(ex) {
+  return ex.sets.reduce(function (s, x) { return s + (x.weight || 0) * (x.reps || 0); }, 0);
+}
+
+function fmtDate(iso) {
+  var parts = iso.split("-");
+  var days = ["日","月","火","水","木","金","土"];
+  var dt = new Date(iso + "T00:00:00");
+  return { d: parseInt(parts[2], 10), y: parts[0], m: parseInt(parts[1], 10), wd: days[dt.getDay()] };
+}
+
+function esc(s) {
+  if (s == null) return "";
+  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+function calcStreak() {
+  if (!state.workouts.length) return 0;
+  var dates = {};
+  state.workouts.forEach(function (w) { dates[w.date] = true; });
+  var s = 0, d = new Date(), safety = 0;
+  while (safety++ < 1000) {
+    var iso = d.toISOString().slice(0, 10);
+    if (dates[iso]) { s++; d.setDate(d.getDate() - 1); }
+    else {
+      if (s === 0 && iso === todayISO()) { d.setDate(d.getDate() - 1); continue; }
+      break;
     }
-    return s;
-  }, [workouts]);
-
-  return (
-    <header style={{ padding: "28px 20px 20px", maxWidth: 560, margin: "0 auto" }}>
-      <div style={{ display:"flex", alignItems:"baseline", justifyContent:"space-between" }}>
-        <div>
-          <div style={{ ...display, fontSize: 11, color: C.accent, fontWeight: 700, letterSpacing: "0.2em" }}>TRAINING LOG</div>
-          <h1 style={{ ...display, fontSize: 32, fontWeight: 700, margin: "2px 0 0", lineHeight: 1 }}>鍛錬</h1>
-        </div>
-        <div style={{ textAlign: "right" }}>
-          <div style={{ ...num, fontSize: 36, color: C.accent, lineHeight: 1 }}>{streak}</div>
-          <div style={{ ...display, fontSize: 10, color: C.muted, letterSpacing: "0.2em", marginTop: 4 }}>DAY STREAK</div>
-        </div>
-      </div>
-    </header>
-  );
-}
-
-function RecordView({ onSave, showToast }) {
-  const [date, setDate] = useState(todayISO());
-  const [exercises, setExercises] = useState([]);
-  const [notes, setNotes] = useState("");
-  const [pickerOpen, setPickerOpen] = useState(false);
-
-  const update = (i, field, val) => { const n = [...exercises]; n[i] = { ...n[i], [field]: val }; setExercises(n); };
-  const addExFromPicker = (name, category) => { setExercises((p) => [...p, { name, category, sets: [{ weight: "", reps: "" }] }]); setPickerOpen(false); };
-  const rmEx = (i) => setExercises(exercises.filter((_, x) => x !== i));
-  const addSet = (i) => { const n = [...exercises]; const last = n[i].sets[n[i].sets.length - 1] || { weight: "", reps: "" }; n[i].sets = [...n[i].sets, { weight: last.weight, reps: last.reps }]; setExercises(n); };
-  const rmSet = (i, j) => { const n = [...exercises]; n[i].sets = n[i].sets.filter((_, x) => x !== j); if (n[i].sets.length === 0) n[i].sets = [{ weight: "", reps: "" }]; setExercises(n); };
-  const setField = (i, j, field, val) => { const n = [...exercises]; n[i].sets[j] = { ...n[i].sets[j], [field]: val }; setExercises(n); };
-
-  const save = () => {
-    const cleaned = exercises.filter((e) => e.name.trim()).map((e) => ({
-      name: e.name.trim(),
-      category: e.category || "custom",
-      sets: e.sets.filter((s) => s.weight !== "" && s.reps !== "").map((s) => ({ weight: parseFloat(s.weight), reps: parseInt(s.reps) })),
-    })).filter((e) => e.sets.length > 0);
-    if (!cleaned.length) { showToast("種目と最低1セットを入力してください"); return; }
-    onSave({ id: Date.now().toString(), date, exercises: cleaned, notes: notes.trim(), createdAt: new Date().toISOString() });
-    setExercises([]); setNotes("");
-  };
-
-  return (
-    <div className="anim-in">
-      <Label>日付</Label>
-      <input type="date" value={date} onChange={(e) => setDate(e.target.value)} style={inputStyle} />
-
-      {exercises.length === 0 && (
-        <div style={{ background: C.surface, border: `1px dashed ${C.border}`, padding: "32px 20px", marginTop: 16, borderRadius: 14, textAlign: "center", color: C.muted }}>
-          <div style={{ ...display, fontSize: 36, color: C.border, marginBottom: 8 }}>🏋️</div>
-          <div style={{ ...jp, fontSize: 13 }}>下のボタンから種目を選択</div>
-        </div>
-      )}
-
-      {exercises.map((ex, i) => {
-        const cat = EXERCISE_LIBRARY[ex.category] || EXERCISE_LIBRARY.custom;
-        return (
-          <div key={i} style={{ background: C.surface, border: `1px solid ${C.border}`, padding: 16, marginTop: 16, borderRadius: 14 }}>
-            <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 12 }}>
-              <div style={{ ...num, fontSize: 18, color: C.accent, minWidth: 28 }}>{String(i + 1).padStart(2, "0")}</div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <input placeholder="種目名" value={ex.name} onChange={(e) => update(i, "name", e.target.value)} style={{ ...inputStyle, margin: 0, padding: "8px 12px", fontSize: 15, fontWeight: 500 }} />
-                <div style={{ ...display, display: "inline-block", marginTop: 6, padding: "2px 8px", background: `${cat.color}22`, color: cat.color, fontSize: 9, letterSpacing: "0.15em", fontWeight: 700, borderRadius: 4 }}>{cat.code}</div>
-              </div>
-              <button onClick={() => rmEx(i)} style={iconBtn}>×</button>
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "32px 1fr 1fr 32px", gap: 8, alignItems: "center" }}>
-              <div style={{ ...display, fontSize: 10, color: C.muted, letterSpacing: "0.15em" }}>SET</div>
-              <div style={{ ...display, fontSize: 10, color: C.muted, letterSpacing: "0.15em" }}>KG</div>
-              <div style={{ ...display, fontSize: 10, color: C.muted, letterSpacing: "0.15em" }}>REPS</div>
-              <div />
-              {ex.sets.map((s, j) => (
-                <React.Fragment key={j}>
-                  <div style={{ ...num, fontSize: 16, color: C.text }}>{j + 1}</div>
-                  <input type="number" inputMode="decimal" placeholder="0" value={s.weight} onChange={(e) => setField(i, j, "weight", e.target.value)} style={cellStyle} />
-                  <input type="number" inputMode="numeric" placeholder="0" value={s.reps} onChange={(e) => setField(i, j, "reps", e.target.value)} style={cellStyle} />
-                  <button onClick={() => rmSet(i, j)} style={{ ...iconBtn, fontSize: 18 }}>−</button>
-                </React.Fragment>
-              ))}
-            </div>
-            <button onClick={() => addSet(i)} style={{ ...display, marginTop: 12, width: "100%", padding: 10, background: "transparent", color: C.accent, border: `1px dashed ${C.border}`, borderRadius: 10, fontSize: 12, letterSpacing: "0.15em", fontWeight: 700, cursor: "pointer" }}>+ SET 追加</button>
-          </div>
-        );
-      })}
-
-      <button onClick={() => setPickerOpen(true)} style={{ ...display, width: "100%", padding: 14, marginTop: 12, background: "transparent", color: C.text, border: `1px solid ${C.border}`, borderRadius: 12, fontSize: 13, fontWeight: 700, letterSpacing: "0.15em", cursor: "pointer" }}>+ 種目を追加</button>
-
-      <Label style={{ marginTop: 24 }}>メモ（任意）</Label>
-      <textarea placeholder="フォームの気づき、体調、次回の目標など" value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} style={{ ...inputStyle, resize: "none", lineHeight: 1.5 }} />
-
-      <button onClick={save} style={{ ...display, width: "100%", padding: 16, marginTop: 20, background: C.accent, color: C.bg, border: "none", borderRadius: 12, fontSize: 15, fontWeight: 700, letterSpacing: "0.2em", cursor: "pointer" }}>記録を保存</button>
-
-      <ExercisePicker open={pickerOpen} onClose={() => setPickerOpen(false)} onSelect={addExFromPicker} />
-    </div>
-  );
-}
-
-function ExercisePicker({ open, onClose, onSelect }) {
-  const [category, setCategory] = useState("chest");
-  const [customName, setCustomName] = useState("");
-  if (!open) return null;
-  const cat = EXERCISE_LIBRARY[category];
-  const handleCustom = () => { const name = customName.trim(); if (!name) return; onSelect(name, "custom"); setCustomName(""); };
-
-  return (
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)", WebkitBackdropFilter: "blur(4px)", zIndex: 100, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
-      <div onClick={(e) => e.stopPropagation()} className="anim-in" style={{ background: C.bg, width: "100%", maxWidth: 560, maxHeight: "85vh", borderRadius: "20px 20px 0 0", border: `1px solid ${C.border}`, borderBottom: "none", display: "flex", flexDirection: "column", paddingBottom: "env(safe-area-inset-bottom)" }}>
-        <div style={{ display: "flex", justifyContent: "center", padding: "10px 0 4px" }}>
-          <div style={{ width: 40, height: 4, background: C.border, borderRadius: 2 }} />
-        </div>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 20px 16px", borderBottom: `1px solid ${C.border}` }}>
-          <div style={{ ...display, fontSize: 16, fontWeight: 700, letterSpacing: "0.05em" }}>種目を選択</div>
-          <button onClick={onClose} style={{ background: "transparent", border: "none", color: C.muted, fontSize: 24, cursor: "pointer", padding: 0, lineHeight: 1 }}>×</button>
-        </div>
-        <div style={{ display: "flex", gap: 8, overflowX: "auto", padding: "14px 20px", borderBottom: `1px solid ${C.border}` }} className="no-scroll">
-          {Object.entries(EXERCISE_LIBRARY).map(([k, v]) => {
-            const active = category === k;
-            return (
-              <button key={k} onClick={() => setCategory(k)} style={{ ...jp, whiteSpace: "nowrap", padding: "8px 16px", background: active ? v.color : "transparent", color: active ? C.bg : C.text, border: `1px solid ${active ? v.color : C.border}`, borderRadius: 999, fontSize: 13, fontWeight: active ? 700 : 500, cursor: "pointer", flexShrink: 0 }}>{v.label}</button>
-            );
-          })}
-        </div>
-        <div style={{ flex: 1, overflowY: "auto", padding: "16px 20px 24px" }}>
-          {category === "custom" ? (
-            <div>
-              <Label>種目名を入力</Label>
-              <input autoFocus value={customName} onChange={(e) => setCustomName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleCustom()} placeholder="例：ケーブルフライ" style={inputStyle} />
-              <button onClick={handleCustom} disabled={!customName.trim()} style={{ ...display, width: "100%", padding: 14, marginTop: 12, background: customName.trim() ? C.accent : C.surface, color: customName.trim() ? C.bg : C.muted, border: "none", borderRadius: 10, fontSize: 13, fontWeight: 700, letterSpacing: "0.2em", cursor: customName.trim() ? "pointer" : "not-allowed" }}>追加</button>
-            </div>
-          ) : (
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-              {cat.items.map((name) => (
-                <button key={name} onClick={() => onSelect(name, category)} style={{ ...jp, padding: "16px 12px", background: C.surface, color: C.text, border: `1px solid ${C.border}`, borderRadius: 12, fontSize: 13, fontWeight: 500, cursor: "pointer", textAlign: "left", lineHeight: 1.4, display: "flex", alignItems: "center", gap: 10, minHeight: 56 }}>
-                  <div style={{ width: 4, alignSelf: "stretch", background: cat.color, borderRadius: 2, flexShrink: 0 }} />
-                  <span style={{ flex: 1 }}>{name}</span>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function HistoryView({ workouts, onDelete }) {
-  const [expanded, setExpanded] = useState(null);
-  if (!workouts.length) {
-    return (
-      <div style={{ padding: "80px 20px", textAlign: "center", color: C.muted }} className="anim-in">
-        <div style={{ ...display, fontSize: 48, color: C.border, marginBottom: 12 }}>∅</div>
-        <div>まだ記録がありません</div>
-        <div style={{ fontSize: 13, marginTop: 6 }}>「記録」タブから始めましょう</div>
-      </div>
-    );
   }
-  const totalSessions = workouts.length;
-  const totalVol = workouts.reduce((s, w) => s + w.exercises.reduce((s2, e) => s2 + totalVolume(e), 0), 0);
-
-  return (
-    <div className="anim-in">
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 20 }}>
-        <Stat label="SESSIONS" value={totalSessions} />
-        <Stat label="TOTAL VOLUME" value={`${Math.round(totalVol).toLocaleString()}`} suffix="kg" />
-      </div>
-      {workouts.map((w) => {
-        const d = fmtDate(w.date);
-        const vol = w.exercises.reduce((s, e) => s + totalVolume(e), 0);
-        const isOpen = expanded === w.id;
-        return (
-          <div key={w.id} style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, marginBottom: 10, overflow: "hidden" }}>
-            <button onClick={() => setExpanded(isOpen ? null : w.id)} style={{ width: "100%", padding: 16, background: "transparent", border: "none", color: C.text, textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", gap: 14 }}>
-              <div style={{ minWidth: 52 }}>
-                <div style={{ ...num, fontSize: 24, color: C.accent, lineHeight: 1 }}>{d.d}</div>
-                <div style={{ ...display, fontSize: 10, color: C.muted, letterSpacing: "0.1em", marginTop: 3 }}>{d.y}.{String(d.m).padStart(2, "0")} {d.wd}</div>
-              </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ ...jp, fontSize: 14, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{w.exercises.map((e) => e.name).join(" · ")}</div>
-                <div style={{ ...mono, fontSize: 11, color: C.muted, marginTop: 4 }}>{w.exercises.length}種目 · {Math.round(vol).toLocaleString()}kg</div>
-              </div>
-              <div style={{ color: C.muted, fontSize: 18, transform: isOpen ? "rotate(90deg)" : "none", transition: "transform 200ms" }}>›</div>
-            </button>
-            {isOpen && (
-              <div style={{ padding: "0 16px 16px", borderTop: `1px solid ${C.border}` }} className="anim-in">
-                {w.exercises.map((ex, i) => {
-                  const cat = EXERCISE_LIBRARY[ex.category] || EXERCISE_LIBRARY.custom;
-                  return (
-                    <div key={i} style={{ padding: "12px 0", borderBottom: i < w.exercises.length - 1 ? `1px solid ${C.border}` : "none" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                        <div style={{ width: 3, height: 16, background: cat.color, borderRadius: 2 }} />
-                        <div style={{ ...jp, fontSize: 14, fontWeight: 700 }}>{ex.name}</div>
-                        <div style={{ ...display, padding: "1px 6px", background: `${cat.color}22`, color: cat.color, fontSize: 9, letterSpacing: "0.1em", fontWeight: 700, borderRadius: 3 }}>{cat.code}</div>
-                      </div>
-                      {ex.sets.map((s, j) => (
-                        <div key={j} style={{ ...mono, fontSize: 13, color: C.muted, display: "flex", gap: 16 }}>
-                          <span style={{ color: C.accent, minWidth: 28 }}>#{j + 1}</span>
-                          <span style={{ color: C.text }}>{s.weight}kg × {s.reps}回</span>
-                        </div>
-                      ))}
-                    </div>
-                  );
-                })}
-                {w.notes && (
-                  <div style={{ padding: "12px 0", borderTop: `1px solid ${C.border}` }}>
-                    <div style={{ ...display, fontSize: 10, color: C.muted, letterSpacing: "0.15em", marginBottom: 6 }}>NOTE</div>
-                    <div style={{ fontSize: 13, color: C.text, whiteSpace: "pre-wrap", lineHeight: 1.5 }}>{w.notes}</div>
-                  </div>
-                )}
-                <button onClick={() => { if (confirm("この記録を削除しますか？")) onDelete(w.id); }} style={{ ...display, marginTop: 10, padding: "8px 14px", background: "transparent", border: `1px solid ${C.danger}`, color: C.danger, borderRadius: 8, fontSize: 11, letterSpacing: "0.15em", fontWeight: 700, cursor: "pointer" }}>削除</button>
-              </div>
-            )}
-          </div>
-        );
-      })}
-    </div>
-  );
+  return s;
 }
 
-function ProgressView({ workouts }) {
-  const exerciseNames = useMemo(() => {
-    const set = new Set();
-    workouts.forEach((w) => w.exercises.forEach((e) => set.add(e.name)));
-    return Array.from(set);
-  }, [workouts]);
-  const [selected, setSelected] = useState(null);
-  const [metric, setMetric] = useState("max");
-
-  useEffect(() => {
-    if (!selected && exerciseNames.length) setSelected(exerciseNames[0]);
-    if (selected && !exerciseNames.includes(selected)) setSelected(exerciseNames[0] || null);
-  }, [exerciseNames, selected]);
-
-  if (!workouts.length) {
-    return (
-      <div style={{ padding: "80px 20px", textAlign: "center", color: C.muted }} className="anim-in">
-        <div style={{ ...display, fontSize: 48, color: C.border, marginBottom: 12 }}>📈</div>
-        <div>記録が増えるとグラフが表示されます</div>
-      </div>
-    );
-  }
-
-  const data = useMemo(() => {
-    if (!selected) return [];
-    const points = [];
-    [...workouts].sort((a, b) => a.date.localeCompare(b.date)).forEach((w) => {
-      const ex = w.exercises.find((e) => e.name === selected);
-      if (!ex) return;
-      const maxW = Math.max(...ex.sets.map((s) => s.weight || 0));
-      const vol = ex.sets.reduce((s, x) => s + (x.weight || 0) * (x.reps || 0), 0);
-      const e1rm = Math.max(...ex.sets.map((s) => (s.weight || 0) * (1 + (s.reps || 0) / 30)));
-      points.push({ date: w.date.slice(5).replace("-", "/"), fullDate: w.date, max: maxW, volume: Math.round(vol), e1rm: Math.round(e1rm * 10) / 10 });
-    });
-    return points;
-  }, [workouts, selected]);
-
-  const metricInfo = {
-    max: { key: "max", label: "最大重量", unit: "kg", desc: "そのセッションで挙げた最大重量" },
-    volume: { key: "volume", label: "総ボリューム", unit: "kg", desc: "重量 × レップの総和" },
-    e1rm: { key: "e1rm", label: "推定1RM", unit: "kg", desc: "Epley式で推定した1回挙上限界" },
-  };
-  const m = metricInfo[metric];
-
-  const stats = useMemo(() => {
-    if (!data.length) return null;
-    const vals = data.map((d) => d[m.key]);
-    return { latest: vals[vals.length - 1], best: Math.max(...vals), delta: vals.length > 1 ? vals[vals.length - 1] - vals[0] : 0 };
-  }, [data, m.key]);
-
-  return (
-    <div className="anim-in">
-      <Label>種目</Label>
-      <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4 }} className="no-scroll">
-        {exerciseNames.map((name) => {
-          const active = selected === name;
-          return (
-            <button key={name} onClick={() => setSelected(name)} style={{ ...jp, whiteSpace: "nowrap", padding: "8px 14px", background: active ? C.accent : C.surface, color: active ? C.bg : C.text, border: `1px solid ${active ? C.accent : C.border}`, borderRadius: 999, fontSize: 13, fontWeight: active ? 700 : 500, cursor: "pointer", flexShrink: 0 }}>{name}</button>
-          );
-        })}
-      </div>
-      <Label style={{ marginTop: 20 }}>指標</Label>
-      <div style={{ display: "flex", gap: 6, background: C.surface, padding: 4, borderRadius: 10, border: `1px solid ${C.border}` }}>
-        {Object.entries(metricInfo).map(([k, v]) => {
-          const active = metric === k;
-          return (
-            <button key={k} onClick={() => setMetric(k)} style={{ ...display, flex: 1, padding: "8px 4px", background: active ? C.bg : "transparent", color: active ? C.accent : C.muted, border: "none", borderRadius: 7, fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", cursor: "pointer" }}>{v.label}</button>
-          );
-        })}
-      </div>
-      {stats && (
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginTop: 16 }}>
-          <Stat label="LATEST" value={stats.latest} suffix={m.unit} />
-          <Stat label="BEST" value={stats.best} suffix={m.unit} />
-          <Stat label="CHANGE" value={(stats.delta >= 0 ? "+" : "") + Math.round(stats.delta * 10) / 10} suffix={m.unit} />
-        </div>
-      )}
-      <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, padding: "16px 8px 8px 0", marginTop: 16, height: 280 }}>
-        {data.length < 2 ? (
-          <div style={{ ...jp, height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: C.muted, fontSize: 13, padding: 16, textAlign: "center" }}>グラフ表示には2回以上の記録が必要です<br />（現在 {data.length} 回）</div>
-        ) : (
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={data} margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
-              <CartesianGrid stroke={C.border} strokeDasharray="2 4" vertical={false} />
-              <XAxis dataKey="date" stroke={C.muted} tick={{ fontSize: 10, fill: C.muted, fontFamily: "'JetBrains Mono', monospace" }} tickLine={false} axisLine={{ stroke: C.border }} />
-              <YAxis stroke={C.muted} tick={{ fontSize: 10, fill: C.muted, fontFamily: "'JetBrains Mono', monospace" }} tickLine={false} axisLine={false} width={40} />
-              <Tooltip contentStyle={{ background: C.bg, border: `1px solid ${C.accent}`, borderRadius: 8, fontSize: 12, fontFamily: "'Noto Sans JP', sans-serif" }} labelStyle={{ color: C.muted, fontSize: 11 }} itemStyle={{ color: C.accent }} formatter={(value) => [`${value} ${m.unit}`, m.label]} />
-              <Line type="monotone" dataKey={m.key} stroke={C.accent} strokeWidth={2.5} dot={{ fill: C.accent, r: 4, strokeWidth: 0 }} activeDot={{ r: 6, fill: C.accent, stroke: C.bg, strokeWidth: 2 }} />
-            </LineChart>
-          </ResponsiveContainer>
-        )}
-      </div>
-      <div style={{ ...jp, fontSize: 12, color: C.muted, marginTop: 12, lineHeight: 1.6 }}>{m.desc}</div>
-    </div>
-  );
+var toastTimer = null;
+function toast(msg) {
+  var old = document.querySelector(".toast");
+  if (old) old.parentNode.removeChild(old);
+  var el = document.createElement("div");
+  el.className = "toast";
+  el.textContent = msg;
+  document.body.appendChild(el);
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 2400);
 }
 
-function SyncView({ workouts, showToast, onImport }) {
-  const buildNotionMd = () => {
-    if (!workouts.length) return "";
-    return workouts.map((w) => {
-      const header = `## 🏋️ ${w.date}`;
-      const body = w.exercises.map((ex) => {
-        const sets = ex.sets.map((s, i) => `  ${i + 1}. ${s.weight}kg × ${s.reps}回`).join("\n");
-        return `### ${ex.name}\n${sets}`;
-      }).join("\n\n");
-      const note = w.notes ? `\n\n> 📝 ${w.notes}` : "";
-      return `${header}\n\n${body}${note}`;
-    }).join("\n\n---\n\n");
-  };
-
-  const copyNotion = async () => {
-    const md = buildNotionMd();
-    if (!md) { showToast("記録がありません"); return; }
-    try { await navigator.clipboard.writeText(md); showToast("Notion 用 Markdown をコピーしました"); }
-    catch { showToast("コピーに失敗しました"); }
-  };
-
-  const downloadIcs = () => {
-    if (!workouts.length) { showToast("記録がありません"); return; }
-    const esc = (s) => String(s).replace(/\\/g, "\\\\").replace(/\n/g, "\\n").replace(/,/g, "\\,").replace(/;/g, "\\;");
-    const events = workouts.map((w) => {
-      const d = w.date.replace(/-/g, "");
-      const summary = `トレーニング (${w.exercises.length}種目)`;
-      const desc = w.exercises.map((e) => {
-        const v = Math.round(totalVolume(e));
-        const setsStr = e.sets.map((s) => `${s.weight}kg×${s.reps}`).join(", ");
-        return `${e.name}: ${setsStr} (計${v}kg)`;
-      }).join("\\n");
-      const fullDesc = w.notes ? `${desc}\\n\\n${esc(w.notes)}` : desc;
-      return ["BEGIN:VEVENT", `UID:${w.id}@kintore-log`, `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, "").split(".")[0]}Z`, `DTSTART;VALUE=DATE:${d}`, `SUMMARY:${esc(summary)}`, `DESCRIPTION:${fullDesc}`, "END:VEVENT"].join("\r\n");
-    });
-    const ics = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Kintore//JP//EN", "CALSCALE:GREGORIAN", ...events, "END:VCALENDAR"].join("\r\n");
-    downloadFile(ics, `workouts_${todayISO()}.ics`, "text/calendar;charset=utf-8");
-    showToast("カレンダーファイルをダウンロード");
-  };
-
-  const exportJson = () => {
-    if (!workouts.length) { showToast("記録がありません"); return; }
-    downloadFile(JSON.stringify(workouts, null, 2), `workouts_backup_${todayISO()}.json`, "application/json");
-    showToast("バックアップをダウンロード");
-  };
-
-  const downloadFile = (content, filename, type) => {
-    const blob = new Blob([content], { type });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url; a.download = filename; a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const handleImport = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      try { const data = JSON.parse(ev.target.result); onImport(data); }
-      catch { showToast("ファイルを読み込めません"); }
-    };
-    reader.readAsText(file);
-    e.target.value = "";
-  };
-
-  return (
-    <div className="anim-in">
-      <div style={{ ...display, fontSize: 11, color: C.muted, letterSpacing: "0.2em", margin: "8px 0 16px" }}>EXPORT / 連携</div>
-      <SyncCard icon="N" title="Notion" desc="全記録を Markdown でクリップボードへコピー。Notionに貼り付けると見出し・箇条書きがそのまま反映されます。" action="Markdown をコピー" onClick={copyNotion} />
-      <SyncCard icon="📅" title="Google カレンダー" desc=".ics ファイルをダウンロード。Googleカレンダー → 設定 → インポート から取り込むと、トレーニング日がイベントとして追加されます。" action="ICS をダウンロード" onClick={downloadIcs} />
-      <SyncCard icon="{ }" title="バックアップ (JSON)" desc="生データを JSON でエクスポート。機種変更や復元用に。" action="JSON をダウンロード" onClick={exportJson} />
-
-      <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, padding: 18, marginBottom: 12 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 10 }}>
-          <div style={{ ...num, width: 40, height: 40, borderRadius: 10, background: C.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, color: C.accent }}>↑</div>
-          <div style={{ ...display, fontSize: 18, fontWeight: 700 }}>JSON 復元</div>
-        </div>
-        <div style={{ ...jp, fontSize: 13, color: C.muted, lineHeight: 1.6, marginBottom: 14 }}>以前にエクスポートしたJSONファイルから記録を復元します。</div>
-        <label style={{ ...display, display: "block", width: "100%", padding: 12, background: C.bg, color: C.accent, border: `1px dashed ${C.accent}66`, borderRadius: 10, fontSize: 13, fontWeight: 700, letterSpacing: "0.15em", cursor: "pointer", textAlign: "center" }}>
-          ファイルを選択
-          <input type="file" accept="application/json,.json" onChange={handleImport} style={{ display: "none" }} />
-        </label>
-      </div>
-    </div>
-  );
+function render() {
+  var html = renderHeader() + '<main>' + renderTab() + '</main>' + renderTabbar() + renderSheet();
+  document.getElementById("app").innerHTML = html;
 }
 
-function SyncCard({ icon, title, desc, action, onClick }) {
-  return (
-    <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, padding: 18, marginBottom: 12 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 10 }}>
-        <div style={{ ...num, width: 40, height: 40, borderRadius: 10, background: C.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, color: C.accent }}>{icon}</div>
-        <div style={{ ...display, fontSize: 18, fontWeight: 700 }}>{title}</div>
-      </div>
-      <div style={{ ...jp, fontSize: 13, color: C.muted, lineHeight: 1.6, marginBottom: 14 }}>{desc}</div>
-      <button onClick={onClick} style={{ ...display, width: "100%", padding: 12, background: C.accent, color: C.bg, border: "none", borderRadius: 10, fontSize: 13, fontWeight: 700, letterSpacing: "0.15em", cursor: "pointer" }}>{action}</button>
-    </div>
-  );
+function renderHeader() {
+  var streak = calcStreak();
+  return '<header class="app-header">' +
+    '<div>' +
+      '<div class="brand-eyebrow display">TRAINING LOG</div>' +
+      '<h1 class="brand-title display">鍛錬</h1>' +
+    '</div>' +
+    '<div style="text-align:right">' +
+      '<div class="streak-num num">' + streak + '</div>' +
+      '<div class="streak-label display">DAY STREAK</div>' +
+    '</div>' +
+  '</header>';
 }
 
-function TabBar({ tab, setTab }) {
-  const tabs = [
+function renderTabbar() {
+  var tabs = [
     { id: "record", label: "記録", code: "LOG" },
     { id: "history", label: "履歴", code: "HIST" },
     { id: "progress", label: "推移", code: "CHART" },
-    { id: "sync", label: "連携", code: "SYNC" },
+    { id: "sync", label: "連携", code: "SYNC" }
   ];
-  return (
-    <nav style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "rgba(10,10,10,0.92)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)", borderTop: `1px solid ${C.border}`, padding: "10px 8px calc(10px + env(safe-area-inset-bottom))", display: "flex", justifyContent: "space-around", zIndex: 40 }}>
-      {tabs.map((t) => {
-        const active = tab === t.id;
-        return (
-          <button key={t.id} onClick={() => setTab(t.id)} style={{ background: "transparent", border: "none", color: active ? C.accent : C.muted, padding: "6px 10px", cursor: "pointer", textAlign: "center", flex: 1 }}>
-            <div style={{ ...display, fontSize: 10, letterSpacing: "0.2em", fontWeight: 700 }}>{t.code}</div>
-            <div style={{ ...jp, fontSize: 12, fontWeight: 500, marginTop: 2 }}>{t.label}</div>
-          </button>
-        );
-      })}
-    </nav>
-  );
+  return '<nav class="tabbar">' + tabs.map(function (t) {
+    return '<button class="tab ' + (state.tab === t.id ? "active" : "") + '" data-action="setTab" data-tab="' + t.id + '">' +
+      '<div class="tab-code display">' + t.code + '</div>' +
+      '<div class="tab-label">' + t.label + '</div>' +
+    '</button>';
+  }).join("") + '</nav>';
 }
 
-function Label({ children, style }) {
-  return <div style={{ ...display, fontSize: 10, color: C.muted, letterSpacing: "0.2em", fontWeight: 700, margin: "16px 0 8px", ...style }}>{children}</div>;
+function renderTab() {
+  if (state.tab === "record") return renderRecord();
+  if (state.tab === "history") return renderHistory();
+  if (state.tab === "progress") return renderProgress();
+  return renderSync();
 }
 
-function Stat({ label, value, suffix }) {
-  return (
-    <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 12, padding: 14 }}>
-      <div style={{ ...display, fontSize: 9, color: C.muted, letterSpacing: "0.2em" }}>{label}</div>
-      <div style={{ ...num, fontSize: 26, color: C.text, lineHeight: 1.1, marginTop: 6 }}>
-        {value}
-        {suffix && <span style={{ ...display, fontSize: 12, color: C.muted, marginLeft: 4, fontWeight: 500 }}>{suffix}</span>}
-      </div>
-    </div>
-  );
+function renderRecord() {
+  var draft = state.draft;
+  var html = '<div class="anim-in">' +
+    '<div class="label display">日付</div>' +
+    '<input class="input" type="date" value="' + esc(draft.date) + '" data-field="date">';
+
+  if (draft.exercises.length === 0) {
+    html += '<div class="empty">' +
+      '<div class="empty-icon">🏋️</div>' +
+      '<div style="font-size:13px">下のボタンから種目を選択</div>' +
+    '</div>';
+  }
+
+  draft.exercises.forEach(function (ex, i) {
+    var cat = LIB[ex.category] || LIB.custom;
+    html += '<div class="ex-card">' +
+      '<div class="ex-head">' +
+        '<div class="ex-num num">' + (i + 1 < 10 ? '0' : '') + (i + 1) + '</div>' +
+        '<div class="ex-name-wrap">' +
+          '<input class="ex-name" placeholder="種目名" value="' + esc(ex.name) + '" data-field="exName" data-i="' + i + '">' +
+          '<div class="cat-tag display" style="background:' + cat.color + '22;color:' + cat.color + '">' + cat.code + '</div>' +
+        '</div>' +
+        '<button class="icon-btn" data-action="removeEx" data-i="' + i + '">×</button>' +
+      '</div>' +
+      '<div class="sets-grid">' +
+        '<div class="set-head display">SET</div>' +
+        '<div class="set-head display">KG</div>' +
+        '<div class="set-head display">REPS</div>' +
+        '<div></div>';
+    ex.sets.forEach(function (s, j) {
+      html += '<div class="set-num num">' + (j + 1) + '</div>' +
+        '<input class="cell num" type="number" inputmode="decimal" placeholder="0" value="' + esc(s.weight) + '" data-field="weight" data-i="' + i + '" data-j="' + j + '">' +
+        '<input class="cell num" type="number" inputmode="numeric" placeholder="0" value="' + esc(s.reps) + '" data-field="reps" data-i="' + i + '" data-j="' + j + '">' +
+        '<button class="icon-btn" style="font-size:18px" data-action="removeSet" data-i="' + i + '" data-j="' + j + '">−</button>';
+    });
+    html += '</div>' +
+      '<button class="add-set-btn display" data-action="addSet" data-i="' + i + '">+ SET 追加</button>' +
+    '</div>';
+  });
+
+  html += '<button class="add-ex-btn display" data-action="openPicker">+ 種目を追加</button>' +
+    '<div class="label display" style="margin-top:24px">メモ（任意）</div>' +
+    '<textarea class="input" placeholder="フォームの気づき、体調、次回の目標など" rows="3" data-field="notes">' + esc(draft.notes) + '</textarea>' +
+    '<button class="save-btn display" data-action="save">記録を保存</button>' +
+  '</div>';
+  return html;
 }
 
-const inputStyle = { fontFamily: "'Noto Sans JP', -apple-system, sans-serif", width: "100%", padding: "12px 14px", background: C.surface, border: `1px solid ${C.border}`, color: C.text, borderRadius: 10, fontSize: 15, outline: "none", boxSizing: "border-box" };
-const cellStyle = { fontFamily: "'Archivo Black', Impact, sans-serif", width: "100%", padding: "10px 12px", background: C.bg, border: `1px solid ${C.border}`, color: C.text, borderRadius: 8, fontSize: 17, outline: "none", textAlign: "center", boxSizing: "border-box" };
-const iconBtn = { background: "transparent", border: `1px solid ${C.border}`, color: C.muted, width: 32, height: 32, borderRadius: 8, fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 };
+function statCard(label, value, suffix) {
+  return '<div class="stat-card">' +
+    '<div class="stat-label display">' + label + '</div>' +
+    '<div class="stat-value num">' + value + (suffix ? '<span class="stat-suffix">' + suffix + '</span>' : '') + '</div>' +
+  '</div>';
+}
 
-ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+function renderHistory() {
+  if (!state.workouts.length) {
+    return '<div class="anim-in" style="padding:80px 20px;text-align:center;color:var(--muted)">' +
+      '<div style="font-size:48px;color:var(--border);margin-bottom:12px">∅</div>' +
+      '<div>まだ記録がありません</div>' +
+      '<div style="font-size:13px;margin-top:6px">「記録」タブから始めましょう</div>' +
+    '</div>';
+  }
+  var sessions = state.workouts.length;
+  var totalVol = state.workouts.reduce(function (s, w) {
+    return s + w.exercises.reduce(function (s2, e) { return s2 + totalVolume(e); }, 0);
+  }, 0);
+
+  var html = '<div class="anim-in">' +
+    '<div class="stats-grid stats-2">' +
+      statCard("SESSIONS", sessions, "") +
+      statCard("TOTAL VOLUME", Math.round(totalVol).toLocaleString(), "kg") +
+    '</div>';
+
+  state.workouts.forEach(function (w) {
+    var d = fmtDate(w.date);
+    var vol = w.exercises.reduce(function (s, e) { return s + totalVolume(e); }, 0);
+    var open = state.expandedId === w.id;
+    var month = d.m < 10 ? '0' + d.m : d.m;
+    html += '<div class="session-card' + (open ? ' open' : '') + '">' +
+      '<button class="session-head" data-action="toggleSession" data-id="' + esc(w.id) + '">' +
+        '<div class="session-date">' +
+          '<div class="session-date-d num">' + d.d + '</div>' +
+          '<div class="session-date-meta display">' + d.y + '.' + month + ' ' + d.wd + '</div>' +
+        '</div>' +
+        '<div class="session-titles">' +
+          '<div class="session-title">' + esc(w.exercises.map(function (e) { return e.name; }).join(" · ")) + '</div>' +
+          '<div class="session-meta mono">' + w.exercises.length + '種目 · ' + Math.round(vol).toLocaleString() + 'kg</div>' +
+        '</div>' +
+        '<div class="chevron">›</div>' +
+      '</button>';
+    if (open) {
+      html += '<div class="session-body">';
+      w.exercises.forEach(function (ex) {
+        var cat = LIB[ex.category] || LIB.custom;
+        html += '<div class="ex-detail">' +
+          '<div class="ex-detail-head">' +
+            '<div class="cat-bar" style="background:' + cat.color + '"></div>' +
+            '<div class="ex-detail-name">' + esc(ex.name) + '</div>' +
+            '<div class="cat-tag display" style="background:' + cat.color + '22;color:' + cat.color + '">' + cat.code + '</div>' +
+          '</div>';
+        ex.sets.forEach(function (s, j) {
+          html += '<div class="set-line mono">' +
+            '<span class="set-line-num">#' + (j + 1) + '</span>' +
+            '<span class="set-line-val">' + s.weight + 'kg × ' + s.reps + '回</span>' +
+          '</div>';
+        });
+        html += '</div>';
+      });
+      if (w.notes) {
+        html += '<div class="note-block">' +
+          '<div class="note-label display">NOTE</div>' +
+          '<div class="note-text">' + esc(w.notes) + '</div>' +
+        '</div>';
+      }
+      html += '<button class="delete-btn display" data-action="deleteSession" data-id="' + esc(w.id) + '">削除</button>' +
+      '</div>';
+    }
+    html += '</div>';
+  });
+  html += '</div>';
+  return html;
+}
+
+function renderProgress() {
+  if (!state.workouts.length) {
+    return '<div class="anim-in" style="padding:80px 20px;text-align:center;color:var(--muted)">' +
+      '<div style="font-size:48px;color:var(--border);margin-bottom:12px">📈</div>' +
+      '<div>記録が増えるとグラフが表示されます</div>' +
+    '</div>';
+  }
+  var names = [], seen = {};
+  state.workouts.forEach(function (w) {
+    w.exercises.forEach(function (e) {
+      if (!seen[e.name]) { seen[e.name] = true; names.push(e.name); }
+    });
+  });
+  if (!state.selectedExercise || !seen[state.selectedExercise]) {
+    state.selectedExercise = names[0];
+  }
+  var sel = state.selectedExercise;
+
+  var points = [];
+  state.workouts.slice().sort(function (a, b) { return a.date.localeCompare(b.date); }).forEach(function (w) {
+    var ex;
+    for (var i = 0; i < w.exercises.length; i++) {
+      if (w.exercises[i].name === sel) { ex = w.exercises[i]; break; }
+    }
+    if (!ex) return;
+    var maxW = 0, vol = 0, e1rm = 0;
+    ex.sets.forEach(function (s) {
+      var weight = s.weight || 0, reps = s.reps || 0;
+      if (weight > maxW) maxW = weight;
+      vol += weight * reps;
+      var e = weight * (1 + reps / 30);
+      if (e > e1rm) e1rm = e;
+    });
+    points.push({ date: w.date, max: maxW, volume: Math.round(vol), e1rm: Math.round(e1rm * 10) / 10 });
+  });
+
+  var metricInfo = {
+    max:    { label: "最大重量",    unit: "kg", desc: "そのセッションで挙げた最大重量" },
+    volume: { label: "総ボリューム", unit: "kg", desc: "重量 × レップの総和" },
+    e1rm:   { label: "推定1RM",     unit: "kg", desc: "Epley式で推定した1回挙上限界" }
+  };
+  var m = state.metric;
+  var info = metricInfo[m];
+
+  var stats = "";
+  if (points.length) {
+    var vals = points.map(function (p) { return p[m]; });
+    var latest = vals[vals.length - 1];
+    var best = Math.max.apply(null, vals);
+    var delta = vals.length > 1 ? Math.round((vals[vals.length - 1] - vals[0]) * 10) / 10 : 0;
+    stats = '<div class="stats-grid stats-3" style="margin-top:16px">' +
+      statCard("LATEST", latest, info.unit) +
+      statCard("BEST", best, info.unit) +
+      statCard("CHANGE", (delta >= 0 ? "+" : "") + delta, info.unit) +
+    '</div>';
+  }
+
+  var html = '<div class="anim-in">' +
+    '<div class="label display">種目</div>' +
+    '<div class="chip-row no-scroll">' +
+      names.map(function (n) {
+        return '<button class="chip ' + (n === sel ? "active" : "") + '" data-action="selectExercise" data-name="' + esc(n) + '">' + esc(n) + '</button>';
+      }).join("") +
+    '</div>' +
+    '<div class="label display" style="margin-top:20px">指標</div>' +
+    '<div class="seg-row">' +
+      Object.keys(metricInfo).map(function (k) {
+        return '<button class="seg display ' + (k === m ? "active" : "") + '" data-action="setMetric" data-metric="' + k + '">' + metricInfo[k].label + '</button>';
+      }).join("") +
+    '</div>' +
+    stats +
+    '<div class="chart-wrap">' + renderChart(points, m, info.unit) + '</div>' +
+    '<div class="metric-desc">' + info.desc + '</div>' +
+  '</div>';
+  return html;
+}
+
+function renderChart(points, metric, unit) {
+  if (points.length < 2) {
+    return '<div class="chart-empty">グラフ表示には2回以上の記録が必要です<br>（現在 ' + points.length + ' 回）</div>';
+  }
+  var W = 520, H = 256;
+  var padL = 36, padR = 12, padT = 12, padB = 28;
+  var innerW = W - padL - padR;
+  var innerH = H - padT - padB;
+
+  var vals = points.map(function (p) { return p[metric]; });
+  var minV = Math.min.apply(null, vals);
+  var maxV = Math.max.apply(null, vals);
+  if (minV === maxV) { minV -= 1; maxV += 1; }
+  var range = maxV - minV;
+  var yMin = Math.max(0, minV - range * 0.1);
+  var yMax = maxV + range * 0.1;
+
+  var xStep = points.length > 1 ? innerW / (points.length - 1) : innerW;
+  var xy = points.map(function (p, i) {
+    return {
+      x: padL + i * xStep,
+      y: padT + innerH - ((p[metric] - yMin) / (yMax - yMin)) * innerH,
+      p: p
+    };
+  });
+
+  var ticks = [];
+  for (var i = 0; i <= 4; i++) {
+    var v = yMin + (yMax - yMin) * (i / 4);
+    var ty = padT + innerH - (i / 4) * innerH;
+    ticks.push({ v: Math.round(v * 10) / 10, y: ty });
+  }
+
+  var xLabels = [];
+  if (points.length <= 6) {
+    points.forEach(function (p, i) { xLabels.push({ i: i, label: p.date.slice(5).replace("-", "/") }); });
+  } else {
+    [0, Math.floor(points.length / 2), points.length - 1].forEach(function (i) {
+      xLabels.push({ i: i, label: points[i].date.slice(5).replace("-", "/") });
+    });
+  }
+
+  var path = xy.map(function (q, i) {
+    return (i === 0 ? "M" : "L") + q.x.toFixed(1) + "," + q.y.toFixed(1);
+  }).join(" ");
+
+  var svg = '<svg class="chart-svg" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none">';
+  ticks.forEach(function (t) {
+    svg += '<line x1="' + padL + '" y1="' + t.y + '" x2="' + (W - padR) + '" y2="' + t.y + '" stroke="#262626" stroke-dasharray="2 4"></line>';
+    svg += '<text x="' + (padL - 6) + '" y="' + (t.y + 3) + '" text-anchor="end" font-size="10" fill="#888" font-family="SF Mono, monospace">' + t.v + '</text>';
+  });
+  svg += '<path d="' + path + '" fill="none" stroke="#d4ff00" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path>';
+  xy.forEach(function (q) {
+    svg += '<circle cx="' + q.x + '" cy="' + q.y + '" r="3.5" fill="#d4ff00"></circle>';
+  });
+  xLabels.forEach(function (l) {
+    var x = padL + l.i * xStep;
+    svg += '<text x="' + x + '" y="' + (H - 8) + '" text-anchor="middle" font-size="10" fill="#888" font-family="SF Mono, monospace">' + l.label + '</text>';
+  });
+  svg += '</svg>';
+  return svg;
+}
+
+function syncCard(icon, title, desc, action, actionId) {
+  return '<div class="sync-card">' +
+    '<div class="sync-head">' +
+      '<div class="sync-icon num">' + icon + '</div>' +
+      '<div class="sync-title display">' + title + '</div>' +
+    '</div>' +
+    '<div class="sync-desc">' + desc + '</div>' +
+    '<button class="sync-btn display" data-action="' + actionId + '">' + action + '</button>' +
+  '</div>';
+}
+
+function renderSync() {
+  return '<div class="anim-in">' +
+    '<div class="sync-eyebrow display">EXPORT / 連携</div>' +
+    syncCard("N", "Notion", "全記録を Markdown でクリップボードへコピー。Notionに貼り付けると見出し・箇条書きがそのまま反映されます。", "Markdown をコピー", "copyNotion") +
+    syncCard("📅", "Google カレンダー", ".ics ファイルをダウンロード。Googleカレンダー → 設定 → インポート から取り込むと、トレーニング日がイベントとして追加されます。", "ICS をダウンロード", "downloadIcs") +
+    syncCard("{ }", "バックアップ (JSON)", "生データを JSON でエクスポート。機種変更や復元用に。", "JSON をダウンロード", "exportJson") +
+    '<div class="sync-card">' +
+      '<div class="sync-head">' +
+        '<div class="sync-icon num">↑</div>' +
+        '<div class="sync-title display">JSON 復元</div>' +
+      '</div>' +
+      '<div class="sync-desc">以前にエクスポートしたJSONファイルから記録を復元します。</div>' +
+      '<label class="sync-btn-import display">' +
+        'ファイルを選択' +
+        '<input type="file" accept="application/json,.json" data-action="importFile">' +
+      '</label>' +
+    '</div>' +
+  '</div>';
+}
+
+function renderSheet() {
+  if (!state.pickerOpen) return "";
+  var cat = LIB[state.pickerCat];
+  var isCustom = state.pickerCat === "custom";
+
+  var html = '<div class="sheet-backdrop" data-backdrop>' +
+    '<div class="sheet">' +
+      '<div class="sheet-handle"><div class="sheet-handle-bar"></div></div>' +
+      '<div class="sheet-header">' +
+        '<div class="sheet-title display">種目を選択</div>' +
+        '<button class="sheet-close" data-action="closeSheet">×</button>' +
+      '</div>' +
+      '<div class="sheet-cats no-scroll">';
+
+  Object.keys(LIB).forEach(function (k) {
+    var v = LIB[k];
+    var active = state.pickerCat === k;
+    var styleStr = active ? 'background:' + v.color + ';border-color:' + v.color + ';color:#0a0a0a' : '';
+    html += '<button class="chip ' + (active ? "active" : "") + '" style="' + styleStr + '" data-action="setPickerCat" data-cat="' + k + '">' + v.label + '</button>';
+  });
+
+  html += '</div><div class="sheet-body">';
+
+  if (isCustom) {
+    var dis = !state.customName.trim();
+    html += '<div class="label display">種目名を入力</div>' +
+      '<input class="input" placeholder="例：ケーブルフライ" value="' + esc(state.customName) + '" data-field="customName">' +
+      '<button class="save-btn display" style="margin-top:12px;' + (dis ? 'background:var(--surface);color:var(--muted)' : '') + '" data-action="addCustom">追加</button>';
+  } else {
+    html += '<div class="ex-grid">';
+    cat.items.forEach(function (name) {
+      html += '<button class="ex-pick" data-action="pickExercise" data-name="' + esc(name) + '" data-cat="' + state.pickerCat + '">' +
+        '<div class="ex-pick-bar" style="background:' + cat.color + '"></div>' +
+        '<span class="ex-pick-name">' + esc(name) + '</span>' +
+      '</button>';
+    });
+    html += '</div>';
+  }
+  html += '</div></div></div>';
+  return html;
+}
+
+// ============ Actions ============
+function setTab(tab) { state.tab = tab; render(); }
+function openPicker() { state.pickerOpen = true; state.customName = ""; render(); }
+function closeSheet() { state.pickerOpen = false; render(); }
+function setPickerCat(cat) { state.pickerCat = cat; render(); }
+
+function pickExercise(name, cat) {
+  state.draft.exercises.push({ name: name, category: cat, sets: [{ weight: "", reps: "" }] });
+  state.pickerOpen = false;
+  render();
+}
+
+function addCustom() {
+  var name = state.customName.trim();
+  if (!name) return;
+  state.customName = "";
+  pickExercise(name, "custom");
+}
+
+function addSet(i) {
+  var ex = state.draft.exercises[i];
+  var last = ex.sets[ex.sets.length - 1] || { weight: "", reps: "" };
+  ex.sets.push({ weight: last.weight, reps: last.reps });
+  render();
+}
+
+function removeSet(i, j) {
+  var ex = state.draft.exercises[i];
+  ex.sets.splice(j, 1);
+  if (ex.sets.length === 0) ex.sets.push({ weight: "", reps: "" });
+  render();
+}
+
+function removeEx(i) {
+  state.draft.exercises.splice(i, 1);
+  render();
+}
+
+function save() {
+  var cleaned = [];
+  state.draft.exercises.forEach(function (e) {
+    if (!(e.name || "").trim()) return;
+    var sets = [];
+    e.sets.forEach(function (s) {
+      if (s.weight !== "" && s.reps !== "") {
+        sets.push({ weight: parseFloat(s.weight), reps: parseInt(s.reps, 10) });
+      }
+    });
+    if (sets.length) cleaned.push({ name: e.name.trim(), category: e.category || "custom", sets: sets });
+  });
+  if (!cleaned.length) { toast("種目と最低1セットを入力してください"); return; }
+  state.workouts.push({
+    id: Date.now().toString(),
+    date: state.draft.date,
+    exercises: cleaned,
+    notes: state.draft.notes.trim(),
+    createdAt: new Date().toISOString()
+  });
+  state.workouts.sort(function (a, b) { return b.date.localeCompare(a.date); });
+  persist();
+  state.draft = { date: todayISO(), exercises: [], notes: "" };
+  state.tab = "history";
+  render();
+  toast("記録を保存しました");
+}
+
+function toggleSession(id) {
+  state.expandedId = state.expandedId === id ? null : id;
+  render();
+}
+
+function deleteSession(id) {
+  if (!confirm("この記録を削除しますか？")) return;
+  state.workouts = state.workouts.filter(function (w) { return w.id !== id; });
+  persist();
+  render();
+  toast("記録を削除しました");
+}
+
+function selectExercise(name) { state.selectedExercise = name; render(); }
+function setMetric(m) { state.metric = m; render(); }
+
+function copyNotion() {
+  if (!state.workouts.length) { toast("記録がありません"); return; }
+  var md = state.workouts.map(function (w) {
+    var header = "## 🏋️ " + w.date;
+    var body = w.exercises.map(function (ex) {
+      var sets = ex.sets.map(function (s, i) { return "  " + (i + 1) + ". " + s.weight + "kg × " + s.reps + "回"; }).join("\n");
+      return "### " + ex.name + "\n" + sets;
+    }).join("\n\n");
+    var note = w.notes ? "\n\n> 📝 " + w.notes : "";
+    return header + "\n\n" + body + note;
+  }).join("\n\n---\n\n");
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(md).then(
+      function () { toast("Notion 用 Markdown をコピーしました"); },
+      function () { fallbackCopy(md); }
+    );
+  } else { fallbackCopy(md); }
+}
+
+function fallbackCopy(text) {
+  var ta = document.createElement("textarea");
+  ta.value = text;
+  ta.style.position = "fixed"; ta.style.opacity = "0";
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand("copy"); toast("Markdown をコピーしました"); }
+  catch (e) { toast("コピーに失敗しました"); }
+  document.body.removeChild(ta);
+}
+
+function downloadIcs() {
+  if (!state.workouts.length) { toast("記録がありません"); return; }
+  function escIcs(s) {
+    return String(s).replace(/\\/g, "\\\\").replace(/\n/g, "\\n").replace(/,/g, "\\,").replace(/;/g, "\\;");
+  }
+  var events = state.workouts.map(function (w) {
+    var d = w.date.replace(/-/g, "");
+    var summary = "トレーニング (" + w.exercises.length + "種目)";
+    var desc = w.exercises.map(function (e) {
+      var v = Math.round(totalVolume(e));
+      var setsStr = e.sets.map(function (s) { return s.weight + "kg×" + s.reps; }).join(", ");
+      return e.name + ": " + setsStr + " (計" + v + "kg)";
+    }).join("\\n");
+    var fullDesc = w.notes ? desc + "\\n\\n" + escIcs(w.notes) : desc;
+    return [
+      "BEGIN:VEVENT",
+      "UID:" + w.id + "@kintore-log",
+      "DTSTAMP:" + new Date().toISOString().replace(/[-:]/g, "").split(".")[0] + "Z",
+      "DTSTART;VALUE=DATE:" + d,
+      "SUMMARY:" + escIcs(summary),
+      "DESCRIPTION:" + fullDesc,
+      "END:VEVENT"
+    ].join("\r\n");
+  });
+  var ics = ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Kintore//JP//EN","CALSCALE:GREGORIAN"].concat(events).concat(["END:VCALENDAR"]).join("\r\n");
+  downloadBlob(ics, "workouts_" + todayISO() + ".ics", "text/calendar;charset=utf-8");
+  toast("カレンダーファイルをダウンロード");
+}
+
+function exportJson() {
+  if (!state.workouts.length) { toast("記録がありません"); return; }
+  downloadBlob(JSON.stringify(state.workouts, null, 2), "workouts_backup_" + todayISO() + ".json", "application/json");
+  toast("バックアップをダウンロード");
+}
+
+function downloadBlob(content, filename, type) {
+  var blob = new Blob([content], { type: type });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url; a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+}
+
+function importJson(file) {
+  var reader = new FileReader();
+  reader.onload = function (e) {
+    try {
+      var data = JSON.parse(e.target.result);
+      if (!Array.isArray(data)) { toast("不正なファイル形式"); return; }
+      var existingIds = {};
+      state.workouts.forEach(function (w) { existingIds[w.id] = true; });
+      var added = 0;
+      data.forEach(function (w) {
+        if (w.id && !existingIds[w.id]) { state.workouts.push(w); added++; }
+      });
+      state.workouts.sort(function (a, b) { return b.date.localeCompare(a.date); });
+      persist();
+      render();
+      toast(added + "件をインポート");
+    } catch (err) {
+      toast("ファイルを読み込めません");
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ============ Event delegation ============
+document.addEventListener("click", function (e) {
+  // Sheet backdrop close
+  if (e.target.hasAttribute("data-backdrop")) {
+    state.pickerOpen = false;
+    render();
+    return;
+  }
+
+  var t = e.target.closest("[data-action]");
+  if (!t) return;
+  var a = t.getAttribute("data-action");
+
+  if (a === "setTab") setTab(t.getAttribute("data-tab"));
+  else if (a === "openPicker") openPicker();
+  else if (a === "closeSheet") closeSheet();
+  else if (a === "setPickerCat") setPickerCat(t.getAttribute("data-cat"));
+  else if (a === "pickExercise") pickExercise(t.getAttribute("data-name"), t.getAttribute("data-cat"));
+  else if (a === "addCustom") addCustom();
+  else if (a === "addSet") addSet(parseInt(t.getAttribute("data-i"), 10));
+  else if (a === "removeSet") removeSet(parseInt(t.getAttribute("data-i"), 10), parseInt(t.getAttribute("data-j"), 10));
+  else if (a === "removeEx") removeEx(parseInt(t.getAttribute("data-i"), 10));
+  else if (a === "save") save();
+  else if (a === "toggleSession") toggleSession(t.getAttribute("data-id"));
+  else if (a === "deleteSession") deleteSession(t.getAttribute("data-id"));
+  else if (a === "selectExercise") selectExercise(t.getAttribute("data-name"));
+  else if (a === "setMetric") setMetric(t.getAttribute("data-metric"));
+  else if (a === "copyNotion") copyNotion();
+  else if (a === "downloadIcs") downloadIcs();
+  else if (a === "exportJson") exportJson();
+});
+
+document.addEventListener("input", function (e) {
+  var t = e.target;
+  var f = t.getAttribute("data-field");
+  if (!f) return;
+
+  if (f === "date") state.draft.date = t.value;
+  else if (f === "notes") state.draft.notes = t.value;
+  else if (f === "exName") {
+    var i = parseInt(t.getAttribute("data-i"), 10);
+    if (state.draft.exercises[i]) state.draft.exercises[i].name = t.value;
+  } else if (f === "weight" || f === "reps") {
+    var ii = parseInt(t.getAttribute("data-i"), 10);
+    var jj = parseInt(t.getAttribute("data-j"), 10);
+    if (state.draft.exercises[ii] && state.draft.exercises[ii].sets[jj]) {
+      state.draft.exercises[ii].sets[jj][f] = t.value;
+    }
+  } else if (f === "customName") state.customName = t.value;
+});
+
+document.addEventListener("change", function (e) {
+  var t = e.target;
+  if (t.getAttribute("data-action") === "importFile" && t.files && t.files[0]) {
+    importJson(t.files[0]);
+    t.value = "";
+  }
+});
+
+// Boot
+load();
+render();
 </script>
 </body>
 </html>

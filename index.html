@@ -4,19 +4,36 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="鍛錬">
-<meta name="theme-color" content="#0a0a0a">
-<link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%230a0a0a'/><text x='50%25' y='54%25' font-family='sans-serif' font-size='100' font-weight='900' fill='%23d4ff00' text-anchor='middle' dominant-baseline='middle'>鍛</text></svg>">
+<meta name="theme-color" content="#ffffff">
+<link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%23ff5722'/><text x='50%25' y='54%25' font-family='sans-serif' font-size='100' font-weight='900' fill='%23ffffff' text-anchor='middle' dominant-baseline='middle'>鍛</text></svg>">
 <title>鍛錬 / Training Log</title>
 <style>
   :root {
-    --bg: #0a0a0a; --surface: #141414; --border: #262626;
-    --accent: #d4ff00; --text: #fafafa; --muted: #888; --danger: #ff4d4d;
+    --bg: #ffffff;
+    --surface: #f5f6f8;
+    --surface-2: #eceef2;
+    --border: #e0e3e9;
+    --border-strong: #c8ccd4;
+    --accent: #ff5722;          /* vivid orange */
+    --accent-hover: #e64a19;
+    --accent-soft: #fff3ef;
+    --secondary: #0066ff;       /* electric blue */
+    --secondary-soft: #e8f0ff;
+    --text: #0a0e1a;
+    --text-2: #3b4252;
+    --muted: #6b7280;
+    --danger: #ef4444;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
   html, body {
-    background: var(--bg); color: var(--text); min-height: 100vh;
+    background: var(--bg);
+    background-image:
+      radial-gradient(circle at 10% 0%, rgba(255, 87, 34, 0.04) 0%, transparent 40%),
+      radial-gradient(circle at 90% 100%, rgba(0, 102, 255, 0.03) 0%, transparent 40%);
+    background-attachment: fixed;
+    color: var(--text); min-height: 100vh;
     font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "ヒラギノ角ゴ ProN", "Yu Gothic", sans-serif;
     overscroll-behavior-y: none;
   }
@@ -42,14 +59,14 @@
   main { padding: 0 20px; max-width: 560px; margin: 0 auto; }
 
   .label { font-size: 10px; color: var(--muted); letter-spacing: 0.2em; font-weight: 700; margin: 16px 0 8px; }
-  .input { width: 100%; padding: 12px 14px; background: var(--surface); border: 1px solid var(--border); color: var(--text); border-radius: 10px; font-size: 15px; outline: none; }
+  .input { width: 100%; padding: 12px 14px; background: #ffffff; border: 1px solid var(--border); color: var(--text); border-radius: 10px; font-size: 15px; outline: none; transition: border-color 150ms; }
   textarea.input { resize: none; line-height: 1.5; }
   .input:focus { border-color: var(--accent); }
 
-  .empty { background: var(--surface); border: 1px dashed var(--border); padding: 32px 20px; margin-top: 16px; border-radius: 14px; text-align: center; color: var(--muted); }
+  .empty { background: var(--surface); border: 1px dashed var(--border-strong); padding: 32px 20px; margin-top: 16px; border-radius: 14px; text-align: center; color: var(--muted); }
   .empty-icon { font-size: 36px; color: var(--border); margin-bottom: 8px; }
 
-  .ex-card { background: var(--surface); border: 1px solid var(--border); padding: 16px; margin-top: 16px; border-radius: 14px; }
+  .ex-card { background: #ffffff; border: 1px solid var(--border); padding: 16px; margin-top: 16px; border-radius: 14px; box-shadow: 0 1px 3px rgba(10, 14, 26, 0.04); }
   .ex-head { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; }
   .ex-num { font-size: 18px; color: var(--accent); min-width: 28px; }
   .ex-name-wrap { flex: 1; min-width: 0; }
@@ -66,18 +83,18 @@
 
   .add-set-btn { margin-top: 12px; width: 100%; padding: 10px; background: transparent; color: var(--accent); border: 1px dashed var(--border); border-radius: 10px; font-size: 12px; letter-spacing: 0.15em; font-weight: 700; }
   .add-ex-btn { width: 100%; padding: 14px; margin-top: 12px; background: transparent; color: var(--text); border: 1px solid var(--border); border-radius: 12px; font-size: 13px; font-weight: 700; letter-spacing: 0.15em; }
-  .save-btn { width: 100%; padding: 16px; margin-top: 20px; background: var(--accent); color: var(--bg); border: none; border-radius: 12px; font-size: 15px; font-weight: 700; letter-spacing: 0.2em; }
-  .save-btn:active { background: #b8e000; }
+  .save-btn { width: 100%; padding: 16px; margin-top: 20px; background: var(--accent); color: #ffffff; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; letter-spacing: 0.2em; box-shadow: 0 4px 12px rgba(255, 87, 34, 0.25); }
+  .save-btn:active { background: var(--accent-hover); transform: translateY(1px); }
 
   .stats-grid { display: grid; gap: 10px; margin-bottom: 20px; }
   .stats-2 { grid-template-columns: 1fr 1fr; }
   .stats-3 { grid-template-columns: 1fr 1fr 1fr; }
-  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px; }
+  .stat-card { background: #ffffff; border: 1px solid var(--border); border-radius: 12px; padding: 14px; box-shadow: 0 1px 3px rgba(10, 14, 26, 0.04); }
   .stat-label { font-size: 9px; color: var(--muted); letter-spacing: 0.2em; font-weight: 700; }
   .stat-value { font-size: 26px; color: var(--text); line-height: 1.1; margin-top: 6px; }
   .stat-suffix { font-size: 12px; color: var(--muted); margin-left: 4px; font-weight: 500; }
 
-  .session-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; margin-bottom: 10px; overflow: hidden; }
+  .session-card { background: #ffffff; border: 1px solid var(--border); border-radius: 14px; margin-bottom: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(10, 14, 26, 0.04); }
   .session-head { width: 100%; padding: 16px; background: transparent; border: none; color: var(--text); text-align: left; display: flex; align-items: center; gap: 14px; }
   .session-date { min-width: 52px; }
   .session-date-d { font-size: 24px; color: var(--accent); line-height: 1; }
@@ -106,39 +123,40 @@
 
   .chip-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
   .chip { white-space: nowrap; padding: 8px 14px; background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 999px; font-size: 13px; font-weight: 500; flex-shrink: 0; }
-  .chip.active { background: var(--accent); color: var(--bg); border-color: var(--accent); font-weight: 700; }
+  .chip.active { background: var(--accent); color: #ffffff; border-color: var(--accent); font-weight: 700; }
 
   .seg-row { display: flex; gap: 6px; background: var(--surface); padding: 4px; border-radius: 10px; border: 1px solid var(--border); }
   .seg { flex: 1; padding: 8px 4px; background: transparent; color: var(--muted); border: none; border-radius: 7px; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; }
-  .seg.active { background: var(--bg); color: var(--accent); }
+  .seg.active { background: #ffffff; color: var(--accent); box-shadow: 0 1px 3px rgba(10, 14, 26, 0.08); font-weight: 700; }
 
-  .chart-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 12px; margin-top: 16px; height: 280px; }
+  .chart-wrap { background: #ffffff; border: 1px solid var(--border); border-radius: 14px; padding: 12px; margin-top: 16px; height: 280px; box-shadow: 0 1px 3px rgba(10, 14, 26, 0.04); }
   .chart-empty { height: 100%; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 13px; text-align: center; padding: 16px; line-height: 1.6; }
   .chart-svg { width: 100%; height: 100%; display: block; }
   .metric-desc { font-size: 12px; color: var(--muted); margin-top: 12px; line-height: 1.6; }
 
   .sync-eyebrow { font-size: 11px; color: var(--muted); letter-spacing: 0.2em; font-weight: 700; margin: 8px 0 16px; }
-  .sync-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px; margin-bottom: 12px; }
+  .sync-card { background: #ffffff; border: 1px solid var(--border); border-radius: 14px; padding: 18px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(10, 14, 26, 0.04); }
   .sync-head { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
-  .sync-icon { width: 40px; height: 40px; border-radius: 10px; background: var(--bg); display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--accent); font-weight: 900; }
+  .sync-icon { width: 40px; height: 40px; border-radius: 10px; background: var(--accent-soft); display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--accent); font-weight: 900; }
   .sync-title { font-size: 18px; font-weight: 700; }
   .sync-desc { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 14px; }
-  .sync-btn { width: 100%; padding: 12px; background: var(--accent); color: var(--bg); border: none; border-radius: 10px; font-size: 13px; font-weight: 700; letter-spacing: 0.15em; }
-  .sync-btn-import { display: block; padding: 12px; background: var(--bg); color: var(--accent); border: 1px dashed rgba(212, 255, 0, 0.4); border-radius: 10px; font-size: 13px; font-weight: 700; letter-spacing: 0.15em; text-align: center; cursor: pointer; }
+  .sync-btn { width: 100%; padding: 12px; background: var(--accent); color: #ffffff; border: none; border-radius: 10px; font-size: 13px; font-weight: 700; letter-spacing: 0.15em; box-shadow: 0 2px 8px rgba(255, 87, 34, 0.2); }
+  .sync-btn:active { background: var(--accent-hover); }
+  .sync-btn-import { display: block; padding: 12px; background: var(--accent-soft); color: var(--accent); border: 1px dashed var(--accent); border-radius: 10px; font-size: 13px; font-weight: 700; letter-spacing: 0.15em; text-align: center; cursor: pointer; }
   .sync-btn-import input { display: none; }
 
-  nav.tabbar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(10, 10, 10, 0.92); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border-top: 1px solid var(--border); padding: 10px 8px calc(10px + env(safe-area-inset-bottom)); display: flex; justify-content: space-around; z-index: 40; }
+  nav.tabbar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(255, 255, 255, 0.92); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border-top: 1px solid var(--border); padding: 10px 8px calc(10px + env(safe-area-inset-bottom)); display: flex; justify-content: space-around; z-index: 40; }
   .tab { background: transparent; border: none; color: var(--muted); padding: 6px 10px; text-align: center; flex: 1; }
   .tab.active { color: var(--accent); }
   .tab-code { font-size: 10px; letter-spacing: 0.2em; font-weight: 700; }
   .tab-label { font-size: 12px; font-weight: 500; margin-top: 2px; }
 
-  .toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 12px 20px; border-radius: 999px; font-size: 14px; font-weight: 500; z-index: 50; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4); max-width: 90%; text-align: center; animation: slideUp 220ms ease-out both; }
+  .toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: var(--text); color: #ffffff; padding: 12px 20px; border-radius: 999px; font-size: 14px; font-weight: 500; z-index: 50; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2); max-width: 90%; text-align: center; animation: slideUp 220ms ease-out both; }
 
-  .sheet-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); z-index: 100; display: flex; align-items: flex-end; justify-content: center; }
-  .sheet { background: var(--bg); width: 100%; max-width: 560px; max-height: 85vh; border-radius: 20px 20px 0 0; border: 1px solid var(--border); border-bottom: none; display: flex; flex-direction: column; padding-bottom: env(safe-area-inset-bottom); animation: slideUp 220ms ease-out both; }
+  .sheet-backdrop { position: fixed; inset: 0; background: rgba(10, 14, 26, 0.45); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); z-index: 100; display: flex; align-items: flex-end; justify-content: center; }
+  .sheet { background: var(--bg); width: 100%; max-width: 560px; max-height: 85vh; border-radius: 20px 20px 0 0; border: 1px solid var(--border); border-bottom: none; display: flex; flex-direction: column; padding-bottom: env(safe-area-inset-bottom); animation: slideUp 220ms ease-out both; box-shadow: 0 -8px 32px rgba(10, 14, 26, 0.12); }
   .sheet-handle { display: flex; justify-content: center; padding: 10px 0 4px; }
-  .sheet-handle-bar { width: 40px; height: 4px; background: var(--border); border-radius: 2px; }
+  .sheet-handle-bar { width: 40px; height: 4px; background: var(--border-strong); border-radius: 2px; }
   .sheet-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 20px 16px; border-bottom: 1px solid var(--border); }
   .sheet-title { font-size: 16px; font-weight: 700; letter-spacing: 0.05em; }
   .sheet-close { background: transparent; border: none; color: var(--muted); font-size: 24px; padding: 0; line-height: 1; }
@@ -149,9 +167,132 @@
   .ex-pick { padding: 16px 12px; background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 12px; font-size: 13px; font-weight: 500; text-align: left; line-height: 1.4; display: flex; align-items: stretch; gap: 10px; min-height: 56px; }
   .ex-pick-bar { width: 4px; border-radius: 2px; flex-shrink: 0; }
   .ex-pick-name { flex: 1; align-self: center; }
+  .bw-tag {
+    display: inline-block; margin-left: 6px; padding: 1px 5px;
+    background: #ec489922; color: #ec4899;
+    font-size: 9px; font-weight: 700; letter-spacing: 0.1em;
+    border-radius: 3px; vertical-align: middle;
+  }
+  .bw-tag.time-tag { background: #60a5fa22; color: #60a5fa; }
 
   @keyframes slideUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
   .anim-in { animation: slideUp 220ms ease-out both; }
+
+  /* ========== Gamification ========== */
+  /* Streak comment under header */
+  .streak-comment {
+    max-width: 560px; margin: -8px auto 0; padding: 0 20px;
+    font-size: 13px; color: var(--secondary); font-weight: 600;
+    letter-spacing: 0.02em; line-height: 1.5;
+    animation: slideUp 320ms ease-out both;
+  }
+  .streak-comment.muted { color: var(--muted); }
+
+  /* PR celebration overlay */
+  @keyframes prPop { 0% { opacity: 0; transform: scale(0.8); } 60% { opacity: 1; transform: scale(1.05); } 100% { opacity: 1; transform: scale(1); } }
+  @keyframes confettiDrop { 0% { transform: translateY(-20px) rotate(0); opacity: 1; } 100% { transform: translateY(120vh) rotate(720deg); opacity: 0; } }
+  .pr-overlay {
+    position: fixed; inset: 0; background: rgba(10, 14, 26, 0.7);
+    z-index: 200; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 20px; animation: slideUp 220ms ease-out both;
+  }
+  .pr-card {
+    background: linear-gradient(135deg, #ffffff 0%, var(--accent-soft) 100%);
+    border: 2px solid var(--accent);
+    border-radius: 20px; padding: 32px 24px; max-width: 360px; width: 100%;
+    text-align: center; box-shadow: 0 12px 40px rgba(255, 87, 34, 0.35);
+    animation: prPop 600ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+  .pr-eyebrow {
+    font-size: 11px; color: var(--accent); letter-spacing: 0.4em; font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .pr-title { font-size: 28px; font-weight: 900; color: var(--text); margin-bottom: 24px; letter-spacing: 0.05em; }
+  .pr-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+  .pr-row {
+    background: rgba(255, 87, 34, 0.06); border: 1px solid rgba(255, 87, 34, 0.25);
+    border-radius: 12px; padding: 14px;
+  }
+  .pr-row-name { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+  .pr-row-vals { display: flex; justify-content: center; align-items: center; gap: 12px; font-size: 14px; }
+  .pr-old { color: var(--muted); text-decoration: line-through; font-family: "SF Mono", Menlo, monospace; }
+  .pr-arrow { color: var(--accent); }
+  .pr-new { color: var(--accent); font-weight: 900; font-family: "SF Mono", Menlo, monospace; font-size: 16px; }
+  .pr-new-label { font-size: 9px; color: var(--accent); letter-spacing: 0.2em; font-weight: 700; margin-left: 4px; }
+  .pr-close-btn {
+    width: 100%; padding: 14px; background: var(--accent); color: #ffffff;
+    border: none; border-radius: 12px; font-size: 14px; font-weight: 700; letter-spacing: 0.2em;
+    box-shadow: 0 4px 12px rgba(255, 87, 34, 0.3);
+  }
+  .pr-close-btn:active { background: var(--accent-hover); }
+  .confetti {
+    position: absolute; width: 8px; height: 8px; top: 0;
+    animation: confettiDrop 2.5s linear forwards;
+  }
+
+  /* PR badge in history list */
+  .pr-mini {
+    display: inline-block; margin-left: 6px; padding: 1px 6px;
+    background: var(--accent); color: #ffffff;
+    font-size: 9px; font-weight: 900; letter-spacing: 0.15em; border-radius: 3px;
+    vertical-align: middle;
+  }
+
+  /* Achievements tab */
+  .ach-section { margin-bottom: 28px; }
+  .ach-section-title {
+    font-size: 11px; color: var(--muted); letter-spacing: 0.2em; font-weight: 700;
+    margin-bottom: 12px;
+  }
+  .ach-grid {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;
+  }
+  .badge {
+    aspect-ratio: 1; background: #ffffff; border: 1px solid var(--border);
+    border-radius: 14px; padding: 10px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center;
+    position: relative; overflow: hidden;
+    box-shadow: 0 1px 3px rgba(10, 14, 26, 0.04);
+  }
+  .badge.locked { background: var(--surface); box-shadow: none; }
+  .badge.unlocked {
+    background: linear-gradient(135deg, var(--accent-soft) 0%, var(--surface) 100%);
+    border-color: var(--accent);
+  }
+  .badge-icon { font-size: 28px; margin-bottom: 4px; line-height: 1; }
+  .badge.locked .badge-icon { filter: grayscale(1) opacity(0.3); }
+  .badge-name {
+    font-size: 10px; font-weight: 700; line-height: 1.2;
+    color: var(--text);
+  }
+  .badge.locked .badge-name { color: var(--muted); }
+  .badge-desc {
+    font-size: 9px; color: var(--muted); margin-top: 2px;
+    line-height: 1.3;
+  }
+  .badge-new-tag {
+    position: absolute; top: 6px; right: 6px;
+    background: var(--accent); color: #ffffff;
+    font-size: 8px; font-weight: 900; letter-spacing: 0.1em;
+    padding: 1px 5px; border-radius: 3px;
+  }
+  .badge-progress {
+    position: absolute; bottom: 0; left: 0; height: 2px;
+    background: var(--accent); transition: width 400ms ease;
+  }
+  .ach-summary {
+    background: linear-gradient(135deg, var(--accent-soft) 0%, var(--secondary-soft) 100%);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 16px; margin-bottom: 20px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .ach-summary-text {
+    font-size: 13px; color: var(--text); font-weight: 500;
+  }
+  .ach-summary-num {
+    font-size: 24px; color: var(--accent); font-weight: 900;
+    font-family: "Helvetica Neue", Impact, sans-serif;
+  }
 </style>
 </head>
 <body>
@@ -161,16 +302,325 @@
 "use strict";
 
 var STORAGE_KEY = "workouts:all_v1";
+var BADGE_KEY = "badges:unlocked_v1";
 
 var LIB = {
-  chest:     { label: "胸",   code: "CHEST",  color: "#ff6b6b", items: ["ベンチプレス","インクラインベンチプレス","デクラインベンチプレス","ダンベルベンチプレス","インクラインダンベルプレス","ダンベルフライ","ディップス"] },
-  back:      { label: "背中", code: "BACK",   color: "#4ecdc4", items: ["デッドリフト","ベントオーバーロウ","ダンベルロウ","Tバーロウ","懸垂","シュラッグ"] },
-  shoulders: { label: "肩",   code: "SHLDR",  color: "#ffd93d", items: ["バーベルショルダープレス","ダンベルショルダープレス","アーノルドプレス","サイドレイズ","フロントレイズ","リアレイズ","アップライトロウ"] },
-  arms:      { label: "腕",   code: "ARMS",   color: "#a78bfa", items: ["バーベルカール","ダンベルカール","ハンマーカール","プリーチャーカール","ナローベンチプレス","フレンチプレス","トライセプスエクステンション","キックバック"] },
-  legs:      { label: "脚",   code: "LEGS",   color: "#34d399", items: ["バーベルスクワット","フロントスクワット","ブルガリアンスクワット","ルーマニアンデッドリフト","ランジ","ヒップスラスト","カーフレイズ"] },
-  core:      { label: "体幹", code: "CORE",   color: "#fb923c", items: ["アブローラー","ハンギングレッグレイズ","プランク","ロシアンツイスト","ケーブルクランチ"] },
-  custom:    { label: "カスタム", code: "CUSTOM", color: "#888", items: [] }
+  chest:      { label: "胸",   code: "CHEST",  color: "#ff6b6b", items: [
+    { name: "ベンチプレス" },
+    { name: "インクラインベンチプレス" },
+    { name: "デクラインベンチプレス" },
+    { name: "ダンベルベンチプレス" },
+    { name: "インクラインダンベルプレス" },
+    { name: "ダンベルフライ" },
+    { name: "ディップス", bw: true },
+    { name: "腕立て伏せ", bw: true },
+  ]},
+  back:       { label: "背中", code: "BACK",   color: "#4ecdc4", items: [
+    { name: "デッドリフト" },
+    { name: "ベントオーバーロウ" },
+    { name: "ダンベルロウ" },
+    { name: "Tバーロウ" },
+    { name: "懸垂", bw: true },
+    { name: "チンニング", bw: true },
+    { name: "インバーテッドロウ", bw: true },
+    { name: "シュラッグ" },
+  ]},
+  shoulders:  { label: "肩",   code: "SHLDR",  color: "#ffd93d", items: [
+    { name: "バーベルショルダープレス" },
+    { name: "ダンベルショルダープレス" },
+    { name: "アーノルドプレス" },
+    { name: "サイドレイズ" },
+    { name: "フロントレイズ" },
+    { name: "リアレイズ" },
+    { name: "アップライトロウ" },
+    { name: "パイクプッシュアップ", bw: true },
+  ]},
+  arms:       { label: "腕",   code: "ARMS",   color: "#a78bfa", items: [
+    { name: "バーベルカール" },
+    { name: "ダンベルカール" },
+    { name: "ハンマーカール" },
+    { name: "プリーチャーカール" },
+    { name: "ナローベンチプレス" },
+    { name: "フレンチプレス" },
+    { name: "トライセプスエクステンション" },
+    { name: "キックバック" },
+    { name: "ナロープッシュアップ", bw: true },
+  ]},
+  legs:       { label: "脚",   code: "LEGS",   color: "#34d399", items: [
+    { name: "バーベルスクワット" },
+    { name: "フロントスクワット" },
+    { name: "ブルガリアンスクワット" },
+    { name: "ルーマニアンデッドリフト" },
+    { name: "ランジ" },
+    { name: "ヒップスラスト" },
+    { name: "カーフレイズ" },
+    { name: "自重スクワット", bw: true },
+    { name: "ピストルスクワット", bw: true },
+    { name: "ジャンピングスクワット", bw: true },
+  ]},
+  core:       { label: "体幹", code: "CORE",   color: "#fb923c", items: [
+    { name: "アブローラー" },
+    { name: "ハンギングレッグレイズ", bw: true },
+    { name: "プランク", bw: true, time: true },
+    { name: "サイドプランク", bw: true, time: true },
+    { name: "ロシアンツイスト" },
+    { name: "ケーブルクランチ" },
+    { name: "クランチ", bw: true },
+    { name: "レッグレイズ", bw: true },
+    { name: "V字腹筋", bw: true },
+    { name: "マウンテンクライマー", bw: true },
+  ]},
+  bodyweight: { label: "自重", code: "BW",     color: "#ec4899", items: [
+    { name: "腕立て伏せ", bw: true },
+    { name: "ワイドプッシュアップ", bw: true },
+    { name: "ナロープッシュアップ", bw: true },
+    { name: "ダイヤモンドプッシュアップ", bw: true },
+    { name: "デクラインプッシュアップ", bw: true },
+    { name: "ヒンズープッシュアップ", bw: true },
+    { name: "懸垂", bw: true },
+    { name: "チンニング", bw: true },
+    { name: "ディップス", bw: true },
+    { name: "自重スクワット", bw: true },
+    { name: "ブルガリアンスクワット（自重）", bw: true },
+    { name: "ピストルスクワット", bw: true },
+    { name: "ランジ（自重）", bw: true },
+    { name: "ステップアップ", bw: true },
+    { name: "プランク", bw: true, time: true },
+    { name: "サイドプランク", bw: true, time: true },
+    { name: "クランチ", bw: true },
+    { name: "バイシクルクランチ", bw: true },
+    { name: "レッグレイズ", bw: true },
+    { name: "バーピー", bw: true },
+    { name: "マウンテンクライマー", bw: true, time: true },
+  ]},
+  custom:     { label: "カスタム", code: "CUSTOM", color: "#888", items: [] }
 };
+
+// Lookup helper: find item metadata by name within a category
+function findExerciseMeta(category, name) {
+  var cat = LIB[category];
+  if (!cat) return null;
+  for (var i = 0; i < cat.items.length; i++) {
+    if (cat.items[i].name === name) return cat.items[i];
+  }
+  return null;
+}
+
+// ========== Gamification Definitions ==========
+
+// Badges: unlock conditions checked against state.workouts
+var BADGES = [
+  // Milestones
+  { id: "first",        icon: "🎯", name: "初トレーニング", desc: "最初の記録",       group: "milestone", check: function (w) { return w.length >= 1; } },
+  { id: "ten",          icon: "🔟", name: "10セッション",    desc: "10回達成",         group: "milestone", check: function (w) { return w.length >= 10; } },
+  { id: "fifty",        icon: "💯", name: "50セッション",    desc: "50回達成",         group: "milestone", check: function (w) { return w.length >= 50; } },
+  { id: "hundred",      icon: "🏆", name: "100セッション",   desc: "100回達成",        group: "milestone", check: function (w) { return w.length >= 100; } },
+  // Streaks
+  { id: "streak3",      icon: "🔥", name: "3日連続",         desc: "3日ストリーク",    group: "streak",    check: function (w) { return maxStreak(w) >= 3; } },
+  { id: "streak7",      icon: "⚡", name: "1週間連続",       desc: "7日ストリーク",    group: "streak",    check: function (w) { return maxStreak(w) >= 7; } },
+  { id: "streak30",     icon: "🌟", name: "30日連続",        desc: "30日ストリーク",   group: "streak",    check: function (w) { return maxStreak(w) >= 30; } },
+  // Volume
+  { id: "vol1t",        icon: "💪", name: "1トン",           desc: "総ボリューム1t",   group: "volume",    check: function (w) { return totalAllVolume(w) >= 1000; } },
+  { id: "vol10t",       icon: "🦾", name: "10トン",          desc: "総ボリューム10t",  group: "volume",    check: function (w) { return totalAllVolume(w) >= 10000; } },
+  { id: "vol100t",      icon: "🗿", name: "100トン",         desc: "総ボリューム100t", group: "volume",    check: function (w) { return totalAllVolume(w) >= 100000; } },
+  // Variety
+  { id: "allparts",     icon: "🎨", name: "全身トレーナー",  desc: "6部位すべて記録",  group: "variety",   check: function (w) { return distinctCategories(w) >= 6; } },
+  { id: "ex10",         icon: "📚", name: "種目コレクター",  desc: "10種目以上を記録", group: "variety",   check: function (w) { return distinctExercises(w) >= 10; } },
+  // PR
+  { id: "firstPR",      icon: "🚀", name: "初PR",            desc: "自己ベスト更新",   group: "pr",       check: function (w, st) { return (st && st.prCount >= 1); } },
+  { id: "pr10",         icon: "👑", name: "PR 10連発",       desc: "PRを10回更新",    group: "pr",       check: function (w, st) { return (st && st.prCount >= 10); } },
+  // Time of day
+  { id: "earlybird",    icon: "🌅", name: "朝練の人",        desc: "5〜8時に記録",     group: "vibe",     check: function (w) { return hasTimeOfDay(w, 5, 8); } },
+  { id: "nightowl",     icon: "🌙", name: "夜の鍛錬",        desc: "22〜26時に記録",   group: "vibe",     check: function (w) { return hasTimeOfDay(w, 22, 26); } },
+  // Bodyweight
+  { id: "bwfirst",      icon: "🤸", name: "自重デビュー",    desc: "自重種目を初記録", group: "bw",      check: function (w) { return hasBwExercise(w); } },
+  { id: "pushup100",    icon: "💥", name: "腕立て100",       desc: "腕立て累計100回", group: "bw",      check: function (w) { return totalRepsForName(w, "腕立て伏せ") + totalRepsForName(w, "ワイドプッシュアップ") + totalRepsForName(w, "ナロープッシュアップ") + totalRepsForName(w, "ダイヤモンドプッシュアップ") + totalRepsForName(w, "デクラインプッシュアップ") + totalRepsForName(w, "ヒンズープッシュアップ") >= 100; } },
+  { id: "pullup50",     icon: "🦅", name: "懸垂50",          desc: "懸垂・チンニング累計50回", group: "bw", check: function (w) { return totalRepsForName(w, "懸垂") + totalRepsForName(w, "チンニング") >= 50; } },
+  { id: "plank3min",    icon: "🧘", name: "プランクの達人",  desc: "プランク3分（180秒）", group: "bw",  check: function (w) { return maxRepsForName(w, "プランク") >= 180; } },
+];
+
+// Helpers for bw badges
+function hasBwExercise(workouts) {
+  for (var i = 0; i < workouts.length; i++) {
+    for (var j = 0; j < workouts[i].exercises.length; j++) {
+      if (workouts[i].exercises[j].bw) return true;
+    }
+  }
+  return false;
+}
+
+function totalRepsForName(workouts, name) {
+  var total = 0;
+  workouts.forEach(function (w) {
+    w.exercises.forEach(function (e) {
+      if (e.name !== name) return;
+      e.sets.forEach(function (s) { total += (s.reps || 0); });
+    });
+  });
+  return total;
+}
+
+function maxRepsForName(workouts, name) {
+  var max = 0;
+  workouts.forEach(function (w) {
+    w.exercises.forEach(function (e) {
+      if (e.name !== name) return;
+      e.sets.forEach(function (s) { if ((s.reps || 0) > max) max = s.reps; });
+    });
+  });
+  return max;
+}
+
+// Streak comments (selected by current streak)
+function streakComment(streak) {
+  if (streak <= 0) return null;
+  if (streak === 1) return "始まりの一歩。";
+  if (streak === 2) return "2日連続、いい流れ。";
+  if (streak === 3) return "3日連続！調子が出てきた。";
+  if (streak < 7) return streak + "日連続。習慣化が見えてきた。";
+  if (streak === 7) return "1週間連続！🔥";
+  if (streak < 14) return streak + "日連続、本物だ。";
+  if (streak < 30) return streak + "日連続、もう止まらない。";
+  if (streak === 30) return "30日連続、伝説の領域へ。⚡";
+  if (streak < 100) return streak + "日連続！どこまでいくのか。";
+  return streak + "日連続。もはや生活の一部。🗿";
+}
+
+// ---- Helpers for badge checks ----
+function totalAllVolume(workouts) {
+  var total = 0;
+  workouts.forEach(function (w) {
+    w.exercises.forEach(function (e) {
+      e.sets.forEach(function (s) { total += (s.weight || 0) * (s.reps || 0); });
+    });
+  });
+  return total;
+}
+
+function distinctCategories(workouts) {
+  var cats = {};
+  workouts.forEach(function (w) {
+    w.exercises.forEach(function (e) {
+      if (e.category && e.category !== "custom") cats[e.category] = true;
+    });
+  });
+  return Object.keys(cats).length;
+}
+
+function distinctExercises(workouts) {
+  var ex = {};
+  workouts.forEach(function (w) {
+    w.exercises.forEach(function (e) { ex[e.name] = true; });
+  });
+  return Object.keys(ex).length;
+}
+
+function maxStreak(workouts) {
+  if (!workouts.length) return 0;
+  var dates = workouts.map(function (w) { return w.date; }).sort();
+  var unique = [];
+  dates.forEach(function (d) { if (unique.indexOf(d) === -1) unique.push(d); });
+  var max = 1, cur = 1;
+  for (var i = 1; i < unique.length; i++) {
+    var prev = new Date(unique[i - 1] + "T00:00:00");
+    var curr = new Date(unique[i] + "T00:00:00");
+    var diff = (curr - prev) / 86400000;
+    if (diff === 1) { cur++; if (cur > max) max = cur; }
+    else cur = 1;
+  }
+  return max;
+}
+
+function hasTimeOfDay(workouts, startH, endH) {
+  // endH may be > 24 to express past-midnight (e.g. 26 = 2am)
+  for (var i = 0; i < workouts.length; i++) {
+    if (!workouts[i].createdAt) continue;
+    var h = new Date(workouts[i].createdAt).getHours();
+    if (endH > 24) {
+      if (h >= startH || h < (endH - 24)) return true;
+    } else {
+      if (h >= startH && h < endH) return true;
+    }
+  }
+  return false;
+}
+
+// PR detection:
+// - Weighted: PR = max single-set weight
+// - Bodyweight (no added weight): PR = max single-set reps
+// - Bodyweight + time: PR = max single-set seconds
+// - Bodyweight with added weight: PR = max single-set added weight (and we display it specially)
+function detectPRs(newWorkout, priorWorkouts) {
+  var prs = [];
+  newWorkout.exercises.forEach(function (ex) {
+    var isBw = !!ex.bw;
+    var isTime = !!ex.time;
+
+    // For bodyweight/time exercises, PR metric is reps/seconds; weight is bonus
+    // Use weight if any set has weight > 0, otherwise use reps
+    var useReps = isBw && !ex.sets.some(function (s) { return (s.weight || 0) > 0; });
+
+    var newBest = 0;
+    ex.sets.forEach(function (s) {
+      var v = useReps ? (s.reps || 0) : (s.weight || 0);
+      if (v > newBest) newBest = v;
+    });
+    if (newBest === 0) return;
+
+    var oldBest = 0;
+    priorWorkouts.forEach(function (w) {
+      w.exercises.forEach(function (pe) {
+        if (pe.name !== ex.name) return;
+        // Determine prior exercise's metric in the same way
+        var priorUseReps = pe.bw && !pe.sets.some(function (s) { return (s.weight || 0) > 0; });
+        // Only compare if same metric type (avoid weight vs reps comparison)
+        if (priorUseReps !== useReps) return;
+        pe.sets.forEach(function (s) {
+          var v = useReps ? (s.reps || 0) : (s.weight || 0);
+          if (v > oldBest) oldBest = v;
+        });
+      });
+    });
+
+    if (newBest > oldBest && oldBest > 0) {
+      var unit = useReps ? (isTime ? "秒" : "回") : "kg";
+      prs.push({
+        name: ex.name,
+        oldBest: oldBest,
+        newBest: newBest,
+        unit: unit
+      });
+    }
+  });
+  return prs;
+}
+
+function countAllTimePRs(workouts) {
+  // Track best per exercise. Key: exercise name + metric type
+  var byKey = {};
+  var sorted = workouts.slice().sort(function (a, b) {
+    return a.date.localeCompare(b.date) || (a.createdAt || "").localeCompare(b.createdAt || "");
+  });
+  var count = 0;
+  sorted.forEach(function (w) {
+    w.exercises.forEach(function (ex) {
+      var useReps = ex.bw && !ex.sets.some(function (s) { return (s.weight || 0) > 0; });
+      var key = ex.name + (useReps ? ":reps" : ":weight");
+      var newMax = 0;
+      ex.sets.forEach(function (s) {
+        var v = useReps ? (s.reps || 0) : (s.weight || 0);
+        if (v > newMax) newMax = v;
+      });
+      if (newMax === 0) return;
+      var prev = byKey[key] || 0;
+      if (newMax > prev) {
+        if (prev > 0) count++; // first record doesn't count as PR
+        byKey[key] = newMax;
+      }
+    });
+  });
+  return count;
+}
 
 function todayISO() {
   var d = new Date();
@@ -186,8 +636,13 @@ var state = {
   pickerOpen: false,
   pickerCat: "chest",
   customName: "",
+  customIsBw: false,
+  customIsTime: false,
   selectedExercise: null,
-  metric: "max"
+  metric: "max",
+  unlockedBadges: {},     // { badgeId: ISOdateUnlocked }
+  recentlyUnlocked: {},   // { badgeId: true } — shown with NEW tag, cleared on view
+  prCelebration: null     // { prs: [...] } when overlay should show
 };
 
 function load() {
@@ -195,11 +650,36 @@ function load() {
     var raw = localStorage.getItem(STORAGE_KEY);
     if (raw) state.workouts = JSON.parse(raw);
   } catch (e) {}
+  try {
+    var braw = localStorage.getItem(BADGE_KEY);
+    if (braw) state.unlockedBadges = JSON.parse(braw);
+  } catch (e) {}
 }
 
 function persist() {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state.workouts)); }
   catch (e) { toast("保存に失敗しました"); }
+}
+
+function persistBadges() {
+  try { localStorage.setItem(BADGE_KEY, JSON.stringify(state.unlockedBadges)); }
+  catch (e) {}
+}
+
+// Run badge checks; returns array of newly unlocked badge IDs
+function checkBadges() {
+  var newly = [];
+  var ctx = { prCount: countAllTimePRs(state.workouts) };
+  BADGES.forEach(function (b) {
+    if (state.unlockedBadges[b.id]) return;
+    if (b.check(state.workouts, ctx)) {
+      state.unlockedBadges[b.id] = new Date().toISOString();
+      state.recentlyUnlocked[b.id] = true;
+      newly.push(b);
+    }
+  });
+  if (newly.length) persistBadges();
+  return newly;
 }
 
 function totalVolume(ex) {
@@ -247,13 +727,53 @@ function toast(msg) {
 }
 
 function render() {
-  var html = renderHeader() + '<main>' + renderTab() + '</main>' + renderTabbar() + renderSheet();
+  var html = renderHeader() + '<main>' + renderTab() + '</main>' + renderTabbar() + renderSheet() + renderPROverlay();
   document.getElementById("app").innerHTML = html;
+}
+
+function renderPROverlay() {
+  if (!state.prCelebration) return "";
+  var prs = state.prCelebration.prs;
+  var html = '<div class="pr-overlay" data-action="closePR">';
+
+  // Confetti
+  var colors = ["#ff5722", "#0066ff", "#ff6b6b", "#4ecdc4", "#ffd93d", "#a78bfa", "#34d399"];
+  for (var i = 0; i < 24; i++) {
+    var left = Math.floor(Math.random() * 100);
+    var delay = Math.floor(Math.random() * 800);
+    var color = colors[i % colors.length];
+    var size = 6 + Math.floor(Math.random() * 8);
+    html += '<div class="confetti" style="left:' + left + '%;background:' + color + ';width:' + size + 'px;height:' + size + 'px;animation-delay:' + delay + 'ms"></div>';
+  }
+
+  html += '<div class="pr-card" onclick="event.stopPropagation()">' +
+    '<div class="pr-eyebrow">PERSONAL RECORD</div>' +
+    '<div class="pr-title">PR 更新！</div>' +
+    '<div class="pr-list">';
+
+  prs.forEach(function (pr) {
+    var unit = pr.unit || "kg";
+    html += '<div class="pr-row">' +
+      '<div class="pr-row-name">' + esc(pr.name) + '</div>' +
+      '<div class="pr-row-vals">' +
+        '<span class="pr-old">' + pr.oldBest + unit + '</span>' +
+        '<span class="pr-arrow">→</span>' +
+        '<span class="pr-new">' + pr.newBest + unit + '</span>' +
+        '<span class="pr-new-label">NEW</span>' +
+      '</div>' +
+    '</div>';
+  });
+
+  html += '</div>' +
+    '<button class="pr-close-btn display" data-action="closePR">続ける</button>' +
+  '</div></div>';
+
+  return html;
 }
 
 function renderHeader() {
   var streak = calcStreak();
-  return '<header class="app-header">' +
+  var html = '<header class="app-header">' +
     '<div>' +
       '<div class="brand-eyebrow display">TRAINING LOG</div>' +
       '<h1 class="brand-title display">鍛錬</h1>' +
@@ -263,6 +783,14 @@ function renderHeader() {
       '<div class="streak-label display">DAY STREAK</div>' +
     '</div>' +
   '</header>';
+  var comment = streakComment(streak);
+  if (comment) {
+    html += '<div class="streak-comment">' + esc(comment) + '</div>';
+  } else if (state.workouts.length > 0) {
+    // Has records but no current streak
+    html += '<div class="streak-comment muted">今日の一歩を踏み出そう。</div>';
+  }
+  return html;
 }
 
 function renderTabbar() {
@@ -270,12 +798,15 @@ function renderTabbar() {
     { id: "record", label: "記録", code: "LOG" },
     { id: "history", label: "履歴", code: "HIST" },
     { id: "progress", label: "推移", code: "CHART" },
+    { id: "achievements", label: "実績", code: "ACH" },
     { id: "sync", label: "連携", code: "SYNC" }
   ];
   return '<nav class="tabbar">' + tabs.map(function (t) {
-    return '<button class="tab ' + (state.tab === t.id ? "active" : "") + '" data-action="setTab" data-tab="' + t.id + '">' +
+    var hasNew = t.id === "achievements" && Object.keys(state.recentlyUnlocked).length > 0;
+    return '<button class="tab ' + (state.tab === t.id ? "active" : "") + '" data-action="setTab" data-tab="' + t.id + '" style="position:relative">' +
       '<div class="tab-code display">' + t.code + '</div>' +
       '<div class="tab-label">' + t.label + '</div>' +
+      (hasNew ? '<div style="position:absolute;top:4px;right:14px;width:7px;height:7px;background:var(--accent);border-radius:50%"></div>' : '') +
     '</button>';
   }).join("") + '</nav>';
 }
@@ -284,6 +815,7 @@ function renderTab() {
   if (state.tab === "record") return renderRecord();
   if (state.tab === "history") return renderHistory();
   if (state.tab === "progress") return renderProgress();
+  if (state.tab === "achievements") return renderAchievements();
   return renderSync();
 }
 
@@ -302,27 +834,38 @@ function renderRecord() {
 
   draft.exercises.forEach(function (ex, i) {
     var cat = LIB[ex.category] || LIB.custom;
+    var isBw = !!ex.bw;
+    var isTime = !!ex.time;
+    var weightHead = isBw ? "+KG" : "KG";
+    var repsHead = isTime ? "SEC" : "REPS";
+    var weightPlaceholder = isBw ? "0" : "0";
+    var repsPlaceholder = isTime ? "30" : "0";
     html += '<div class="ex-card">' +
       '<div class="ex-head">' +
         '<div class="ex-num num">' + (i + 1 < 10 ? '0' : '') + (i + 1) + '</div>' +
         '<div class="ex-name-wrap">' +
           '<input class="ex-name" placeholder="種目名" value="' + esc(ex.name) + '" data-field="exName" data-i="' + i + '">' +
-          '<div class="cat-tag display" style="background:' + cat.color + '22;color:' + cat.color + '">' + cat.code + '</div>' +
+          '<div style="display:flex;gap:6px;margin-top:6px;align-items:center;flex-wrap:wrap">' +
+            '<div class="cat-tag display" style="background:' + cat.color + '22;color:' + cat.color + '">' + cat.code + '</div>' +
+            (isBw ? '<div class="cat-tag display" style="background:#ec489922;color:#ec4899">自重</div>' : '') +
+            (isTime ? '<div class="cat-tag display" style="background:#60a5fa22;color:#60a5fa">時間</div>' : '') +
+          '</div>' +
         '</div>' +
         '<button class="icon-btn" data-action="removeEx" data-i="' + i + '">×</button>' +
       '</div>' +
       '<div class="sets-grid">' +
         '<div class="set-head display">SET</div>' +
-        '<div class="set-head display">KG</div>' +
-        '<div class="set-head display">REPS</div>' +
+        '<div class="set-head display">' + weightHead + '</div>' +
+        '<div class="set-head display">' + repsHead + '</div>' +
         '<div></div>';
     ex.sets.forEach(function (s, j) {
       html += '<div class="set-num num">' + (j + 1) + '</div>' +
-        '<input class="cell num" type="number" inputmode="decimal" placeholder="0" value="' + esc(s.weight) + '" data-field="weight" data-i="' + i + '" data-j="' + j + '">' +
-        '<input class="cell num" type="number" inputmode="numeric" placeholder="0" value="' + esc(s.reps) + '" data-field="reps" data-i="' + i + '" data-j="' + j + '">' +
+        '<input class="cell num" type="number" inputmode="decimal" placeholder="' + weightPlaceholder + '" value="' + esc(s.weight) + '" data-field="weight" data-i="' + i + '" data-j="' + j + '">' +
+        '<input class="cell num" type="number" inputmode="numeric" placeholder="' + repsPlaceholder + '" value="' + esc(s.reps) + '" data-field="reps" data-i="' + i + '" data-j="' + j + '">' +
         '<button class="icon-btn" style="font-size:18px" data-action="removeSet" data-i="' + i + '" data-j="' + j + '">−</button>';
     });
     html += '</div>' +
+      (isBw ? '<div style="font-size:11px;color:var(--muted);margin-top:8px;line-height:1.5">+KG は加重（チンニングベルトなど）。なければ空欄でOK</div>' : '') +
       '<button class="add-set-btn display" data-action="addSet" data-i="' + i + '">+ SET 追加</button>' +
     '</div>';
   });
@@ -382,16 +925,26 @@ function renderHistory() {
       html += '<div class="session-body">';
       w.exercises.forEach(function (ex) {
         var cat = LIB[ex.category] || LIB.custom;
+        var isPR = w.prs && w.prs.indexOf(ex.name) !== -1;
         html += '<div class="ex-detail">' +
-          '<div class="ex-detail-head">' +
+          '<div class="ex-detail-head" style="flex-wrap:wrap">' +
             '<div class="cat-bar" style="background:' + cat.color + '"></div>' +
-            '<div class="ex-detail-name">' + esc(ex.name) + '</div>' +
+            '<div class="ex-detail-name">' + esc(ex.name) + (isPR ? '<span class="pr-mini">PR</span>' : '') + '</div>' +
             '<div class="cat-tag display" style="background:' + cat.color + '22;color:' + cat.color + '">' + cat.code + '</div>' +
+            (ex.bw ? '<div class="cat-tag display" style="background:#ec489922;color:#ec4899">自重</div>' : '') +
           '</div>';
         ex.sets.forEach(function (s, j) {
+          var valStr;
+          if (ex.time) {
+            valStr = (s.weight > 0 ? "+" + s.weight + "kg / " : "") + s.reps + "秒";
+          } else if (ex.bw) {
+            valStr = (s.weight > 0 ? "+" + s.weight + "kg × " : "自重 × ") + s.reps + "回";
+          } else {
+            valStr = s.weight + "kg × " + s.reps + "回";
+          }
           html += '<div class="set-line mono">' +
             '<span class="set-line-num">#' + (j + 1) + '</span>' +
-            '<span class="set-line-val">' + s.weight + 'kg × ' + s.reps + '回</span>' +
+            '<span class="set-line-val">' + valStr + '</span>' +
           '</div>';
         });
         html += '</div>';
@@ -429,6 +982,26 @@ function renderProgress() {
   }
   var sel = state.selectedExercise;
 
+  // Determine if this exercise is bodyweight (no added weight) by looking at all records
+  var isBwExercise = false;
+  var isTimeExercise = false;
+  var allBw = true;
+  var hasAnyWeight = false;
+  state.workouts.forEach(function (w) {
+    w.exercises.forEach(function (ex) {
+      if (ex.name !== sel) return;
+      if (ex.bw) {
+        if (ex.time) isTimeExercise = true;
+        ex.sets.forEach(function (s) {
+          if ((s.weight || 0) > 0) hasAnyWeight = true;
+        });
+      } else {
+        allBw = false;
+      }
+    });
+  });
+  isBwExercise = allBw && !hasAnyWeight;
+
   var points = [];
   state.workouts.slice().sort(function (a, b) { return a.date.localeCompare(b.date); }).forEach(function (w) {
     var ex;
@@ -436,22 +1009,42 @@ function renderProgress() {
       if (w.exercises[i].name === sel) { ex = w.exercises[i]; break; }
     }
     if (!ex) return;
-    var maxW = 0, vol = 0, e1rm = 0;
+    var maxW = 0, maxR = 0, vol = 0, e1rm = 0, totalReps = 0;
     ex.sets.forEach(function (s) {
       var weight = s.weight || 0, reps = s.reps || 0;
       if (weight > maxW) maxW = weight;
+      if (reps > maxR) maxR = reps;
       vol += weight * reps;
+      totalReps += reps;
       var e = weight * (1 + reps / 30);
       if (e > e1rm) e1rm = e;
     });
-    points.push({ date: w.date, max: maxW, volume: Math.round(vol), e1rm: Math.round(e1rm * 10) / 10 });
+    points.push({
+      date: w.date,
+      max: maxW,
+      maxReps: maxR,
+      volume: Math.round(vol),
+      e1rm: Math.round(e1rm * 10) / 10,
+      totalReps: totalReps
+    });
   });
 
-  var metricInfo = {
-    max:    { label: "最大重量",    unit: "kg", desc: "そのセッションで挙げた最大重量" },
-    volume: { label: "総ボリューム", unit: "kg", desc: "重量 × レップの総和" },
-    e1rm:   { label: "推定1RM",     unit: "kg", desc: "Epley式で推定した1回挙上限界" }
-  };
+  var metricInfo;
+  if (isBwExercise) {
+    var unit = isTimeExercise ? "秒" : "回";
+    metricInfo = {
+      maxReps:   { label: isTimeExercise ? "最長秒数" : "最大レップ", unit: unit, desc: "1セットでの最高記録" },
+      totalReps: { label: isTimeExercise ? "合計秒数" : "合計レップ", unit: unit, desc: "そのセッションの合計" }
+    };
+    if (state.metric !== "maxReps" && state.metric !== "totalReps") state.metric = "maxReps";
+  } else {
+    metricInfo = {
+      max:    { label: "最大重量",    unit: "kg", desc: "そのセッションで挙げた最大重量" },
+      volume: { label: "総ボリューム", unit: "kg", desc: "重量 × レップの総和" },
+      e1rm:   { label: "推定1RM",     unit: "kg", desc: "Epley式で推定した1回挙上限界" }
+    };
+    if (state.metric !== "max" && state.metric !== "volume" && state.metric !== "e1rm") state.metric = "max";
+  }
   var m = state.metric;
   var info = metricInfo[m];
 
@@ -536,19 +1129,84 @@ function renderChart(points, metric, unit) {
 
   var svg = '<svg class="chart-svg" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none">';
   ticks.forEach(function (t) {
-    svg += '<line x1="' + padL + '" y1="' + t.y + '" x2="' + (W - padR) + '" y2="' + t.y + '" stroke="#262626" stroke-dasharray="2 4"></line>';
-    svg += '<text x="' + (padL - 6) + '" y="' + (t.y + 3) + '" text-anchor="end" font-size="10" fill="#888" font-family="SF Mono, monospace">' + t.v + '</text>';
+    svg += '<line x1="' + padL + '" y1="' + t.y + '" x2="' + (W - padR) + '" y2="' + t.y + '" stroke="#e0e3e9" stroke-dasharray="2 4"></line>';
+    svg += '<text x="' + (padL - 6) + '" y="' + (t.y + 3) + '" text-anchor="end" font-size="10" fill="#6b7280" font-family="SF Mono, monospace">' + t.v + '</text>';
   });
-  svg += '<path d="' + path + '" fill="none" stroke="#d4ff00" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path>';
+  svg += '<path d="' + path + '" fill="none" stroke="#ff5722" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path>';
   xy.forEach(function (q) {
-    svg += '<circle cx="' + q.x + '" cy="' + q.y + '" r="3.5" fill="#d4ff00"></circle>';
+    svg += '<circle cx="' + q.x + '" cy="' + q.y + '" r="3.5" fill="#ff5722"></circle>';
   });
   xLabels.forEach(function (l) {
     var x = padL + l.i * xStep;
-    svg += '<text x="' + x + '" y="' + (H - 8) + '" text-anchor="middle" font-size="10" fill="#888" font-family="SF Mono, monospace">' + l.label + '</text>';
+    svg += '<text x="' + x + '" y="' + (H - 8) + '" text-anchor="middle" font-size="10" fill="#6b7280" font-family="SF Mono, monospace">' + l.label + '</text>';
   });
   svg += '</svg>';
   return svg;
+}
+
+function renderAchievements() {
+  // Clear "new" badges when viewing this tab
+  var stillNew = Object.assign({}, state.recentlyUnlocked);
+
+  var unlockedCount = Object.keys(state.unlockedBadges).length;
+  var totalCount = BADGES.length;
+
+  // Group badges by group
+  var groups = {
+    milestone: { label: "マイルストーン", badges: [] },
+    streak:    { label: "ストリーク",     badges: [] },
+    volume:    { label: "ボリューム",     badges: [] },
+    pr:        { label: "PR",            badges: [] },
+    bw:        { label: "自重トレーニング", badges: [] },
+    variety:   { label: "バラエティ",     badges: [] },
+    vibe:      { label: "ライフスタイル", badges: [] },
+  };
+  BADGES.forEach(function (b) {
+    if (groups[b.group]) groups[b.group].badges.push(b);
+  });
+
+  var html = '<div class="anim-in">' +
+    '<div class="ach-summary">' +
+      '<div>' +
+        '<div class="ach-summary-text">獲得バッジ</div>' +
+        '<div style="font-size:11px;color:var(--muted);letter-spacing:0.1em;margin-top:2px">ACHIEVEMENTS</div>' +
+      '</div>' +
+      '<div>' +
+        '<span class="ach-summary-num">' + unlockedCount + '</span>' +
+        '<span style="font-size:14px;color:var(--muted);margin-left:4px">/ ' + totalCount + '</span>' +
+      '</div>' +
+    '</div>';
+
+  Object.keys(groups).forEach(function (g) {
+    var group = groups[g];
+    if (!group.badges.length) return;
+    html += '<div class="ach-section">' +
+      '<div class="ach-section-title display">' + group.label + '</div>' +
+      '<div class="ach-grid">';
+    group.badges.forEach(function (b) {
+      var unlocked = !!state.unlockedBadges[b.id];
+      var isNew = !!stillNew[b.id];
+      html += '<div class="badge ' + (unlocked ? "unlocked" : "locked") + '">' +
+        (isNew ? '<div class="badge-new-tag">NEW</div>' : '') +
+        '<div class="badge-icon">' + (unlocked ? b.icon : "🔒") + '</div>' +
+        '<div class="badge-name">' + esc(b.name) + '</div>' +
+        '<div class="badge-desc">' + esc(b.desc) + '</div>' +
+      '</div>';
+    });
+    html += '</div></div>';
+  });
+
+  html += '</div>';
+
+  // Clear "new" flags after rendering once the user viewed
+  setTimeout(function () {
+    if (Object.keys(state.recentlyUnlocked).length > 0) {
+      state.recentlyUnlocked = {};
+      // Don't re-render, badges are already shown without NEW tag on next render
+    }
+  }, 100);
+
+  return html;
 }
 
 function syncCard(icon, title, desc, action, actionId) {
@@ -599,7 +1257,7 @@ function renderSheet() {
   Object.keys(LIB).forEach(function (k) {
     var v = LIB[k];
     var active = state.pickerCat === k;
-    var styleStr = active ? 'background:' + v.color + ';border-color:' + v.color + ';color:#0a0a0a' : '';
+    var styleStr = active ? 'background:' + v.color + ';border-color:' + v.color + ';color:#ffffff' : '';
     html += '<button class="chip ' + (active ? "active" : "") + '" style="' + styleStr + '" data-action="setPickerCat" data-cat="' + k + '">' + v.label + '</button>';
   });
 
@@ -609,13 +1267,28 @@ function renderSheet() {
     var dis = !state.customName.trim();
     html += '<div class="label display">種目名を入力</div>' +
       '<input class="input" placeholder="例：ケーブルフライ" value="' + esc(state.customName) + '" data-field="customName">' +
+      '<div style="display:flex;gap:8px;margin-top:12px">' +
+        '<button class="seg display' + (state.customIsBw ? ' active' : '') + '" style="flex:1;padding:10px 8px;background:' + (state.customIsBw ? 'var(--bg)' : 'var(--surface)') + ';color:' + (state.customIsBw ? '#ec4899' : 'var(--muted)') + ';border:1px solid var(--border);border-radius:8px" data-action="toggleCustomBw">自重</button>' +
+        '<button class="seg display' + (state.customIsTime ? ' active' : '') + '" style="flex:1;padding:10px 8px;background:' + (state.customIsTime ? 'var(--bg)' : 'var(--surface)') + ';color:' + (state.customIsTime ? '#60a5fa' : 'var(--muted)') + ';border:1px solid var(--border);border-radius:8px" data-action="toggleCustomTime">時間（秒）</button>' +
+      '</div>' +
+      '<div style="font-size:11px;color:var(--muted);margin-top:8px;line-height:1.5">' +
+        '通常はそのまま追加。自重なら「自重」を、プランクなど秒数記録なら「時間」もオン。' +
+      '</div>' +
       '<button class="save-btn display" style="margin-top:12px;' + (dis ? 'background:var(--surface);color:var(--muted)' : '') + '" data-action="addCustom">追加</button>';
   } else {
     html += '<div class="ex-grid">';
-    cat.items.forEach(function (name) {
-      html += '<button class="ex-pick" data-action="pickExercise" data-name="' + esc(name) + '" data-cat="' + state.pickerCat + '">' +
+    cat.items.forEach(function (item) {
+      var itemName = item.name;
+      var isBw = !!item.bw;
+      var isTime = !!item.time;
+      var bwAttr = isBw ? ' data-bw="1"' : '';
+      var timeAttr = isTime ? ' data-time="1"' : '';
+      html += '<button class="ex-pick" data-action="pickExercise" data-name="' + esc(itemName) + '" data-cat="' + state.pickerCat + '"' + bwAttr + timeAttr + '>' +
         '<div class="ex-pick-bar" style="background:' + cat.color + '"></div>' +
-        '<span class="ex-pick-name">' + esc(name) + '</span>' +
+        '<span class="ex-pick-name">' + esc(itemName) +
+          (isBw ? '<span class="bw-tag">自重</span>' : '') +
+          (isTime ? '<span class="bw-tag time-tag">秒</span>' : '') +
+        '</span>' +
       '</button>';
     });
     html += '</div>';
@@ -625,13 +1298,38 @@ function renderSheet() {
 }
 
 // ============ Actions ============
-function setTab(tab) { state.tab = tab; render(); }
-function openPicker() { state.pickerOpen = true; state.customName = ""; render(); }
+function setTab(tab) {
+  // Clear "new" badge flags when leaving achievements
+  if (state.tab === "achievements" && tab !== "achievements") {
+    state.recentlyUnlocked = {};
+  }
+  state.tab = tab;
+  render();
+}
+function openPicker() {
+  state.pickerOpen = true;
+  state.customName = "";
+  state.customIsBw = false;
+  state.customIsTime = false;
+  render();
+}
+function toggleCustomBw() { state.customIsBw = !state.customIsBw; render(); }
+function toggleCustomTime() {
+  state.customIsTime = !state.customIsTime;
+  if (state.customIsTime) state.customIsBw = true; // time implies bw
+  render();
+}
 function closeSheet() { state.pickerOpen = false; render(); }
 function setPickerCat(cat) { state.pickerCat = cat; render(); }
 
-function pickExercise(name, cat) {
-  state.draft.exercises.push({ name: name, category: cat, sets: [{ weight: "", reps: "" }] });
+function pickExercise(name, cat, isBw, isTime) {
+  state.draft.exercises.push({
+    name: name,
+    category: cat,
+    bw: !!isBw,
+    time: !!isTime,
+    sets: [{ weight: "", reps: "" }]
+  });
   state.pickerOpen = false;
   render();
 }
@@ -640,7 +1338,9 @@ function addCustom() {
   var name = state.customName.trim();
   if (!name) return;
   state.customName = "";
-  pickExercise(name, "custom");
+  pickExercise(name, "custom", state.customIsBw, state.customIsTime);
+  state.customIsBw = false;
+  state.customIsTime = false;
 }
 
 function addSet(i) {
@@ -668,26 +1368,89 @@ function save() {
     if (!(e.name || "").trim()) return;
     var sets = [];
     e.sets.forEach(function (s) {
-      if (s.weight !== "" && s.reps !== "") {
-        sets.push({ weight: parseFloat(s.weight), reps: parseInt(s.reps, 10) });
+      if (e.bw) {
+        // Bodyweight: only reps required, weight defaults to 0 (additional weight)
+        if (s.reps !== "" && s.reps != null) {
+          sets.push({
+            weight: s.weight === "" || s.weight == null ? 0 : parseFloat(s.weight),
+            reps: parseInt(s.reps, 10)
+          });
+        }
+      } else {
+        // Weighted: both required
+        if (s.weight !== "" && s.reps !== "") {
+          sets.push({ weight: parseFloat(s.weight), reps: parseInt(s.reps, 10) });
+        }
       }
     });
-    if (sets.length) cleaned.push({ name: e.name.trim(), category: e.category || "custom", sets: sets });
+    if (sets.length) {
+      cleaned.push({
+        name: e.name.trim(),
+        category: e.category || "custom",
+        bw: !!e.bw,
+        time: !!e.time,
+        sets: sets
+      });
+    }
   });
-  if (!cleaned.length) { toast("種目と最低1セットを入力してください"); return; }
-  state.workouts.push({
+  if (!cleaned.length) {
+    toast("種目とセットを入力してください");
+    return;
+  }
+
+  var newWorkout = {
     id: Date.now().toString(),
     date: state.draft.date,
     exercises: cleaned,
     notes: state.draft.notes.trim(),
     createdAt: new Date().toISOString()
-  });
+  };
+
+  // Detect PRs against prior workouts (before adding the new one)
+  var prs = detectPRs(newWorkout, state.workouts);
+
+  state.workouts.push(newWorkout);
   state.workouts.sort(function (a, b) { return b.date.localeCompare(a.date); });
   persist();
+
+  // Mark this workout with PRs so history can show them
+  if (prs.length) {
+    newWorkout.prs = prs.map(function (p) { return p.name; });
+    persist();
+  }
+
+  // Check badges
+  var newBadges = checkBadges();
+
   state.draft = { date: todayISO(), exercises: [], notes: "" };
+
+  // Show PR celebration if any (priority over tab switch)
+  if (prs.length) {
+    state.prCelebration = { prs: prs, pendingBadges: newBadges };
+    render();
+    return;
+  }
+
   state.tab = "history";
   render();
-  toast("記録を保存しました");
+
+  if (newBadges.length) {
+    toast("🏅 新バッジ: " + newBadges[0].name + (newBadges.length > 1 ? " 他" + (newBadges.length - 1) + "件" : ""));
+  } else {
+    toast("記録を保存しました");
+  }
+}
+
+function closePR() {
+  var pending = state.prCelebration && state.prCelebration.pendingBadges;
+  state.prCelebration = null;
+  state.tab = "history";
+  render();
+  if (pending && pending.length) {
+    setTimeout(function () {
+      toast("🏅 新バッジ: " + pending[0].name + (pending.length > 1 ? " 他" + (pending.length - 1) + "件" : ""));
+    }, 200);
+  }
 }
 
 function toggleSession(id) {
@@ -711,7 +1474,14 @@ function copyNotion() {
   var md = state.workouts.map(function (w) {
     var header = "## 🏋️ " + w.date;
     var body = w.exercises.map(function (ex) {
-      var sets = ex.sets.map(function (s, i) { return "  " + (i + 1) + ". " + s.weight + "kg × " + s.reps + "回"; }).join("\n");
+      var sets = ex.sets.map(function (s, i) {
+        if (ex.time) {
+          return "  " + (i + 1) + ". " + (s.weight > 0 ? "+" + s.weight + "kg / " : "") + s.reps + "秒";
+        } else if (ex.bw) {
+          return "  " + (i + 1) + ". " + (s.weight > 0 ? "+" + s.weight + "kg × " : "自重 × ") + s.reps + "回";
+        }
+        return "  " + (i + 1) + ". " + s.weight + "kg × " + s.reps + "回";
+      }).join("\n");
       return "### " + ex.name + "\n" + sets;
     }).join("\n\n");
     var note = w.notes ? "\n\n> 📝 " + w.notes : "";
@@ -746,8 +1516,16 @@ function downloadIcs() {
     var d = w.date.replace(/-/g, "");
     var summary = "トレーニング (" + w.exercises.length + "種目)";
     var desc = w.exercises.map(function (e) {
+      var setsStr = e.sets.map(function (s) {
+        if (e.time) return (s.weight > 0 ? "+" + s.weight + "kg/" : "") + s.reps + "秒";
+        if (e.bw) return (s.weight > 0 ? "+" + s.weight + "kg×" : "自重×") + s.reps;
+        return s.weight + "kg×" + s.reps;
+      }).join(", ");
+      if (e.bw) {
+        var totalReps = e.sets.reduce(function (sum, s) { return sum + (s.reps || 0); }, 0);
+        return e.name + ": " + setsStr + " (計" + totalReps + (e.time ? "秒" : "回") + ")";
+      }
       var v = Math.round(totalVolume(e));
-      var setsStr = e.sets.map(function (s) { return s.weight + "kg×" + s.reps; }).join(", ");
       return e.name + ": " + setsStr + " (計" + v + "kg)";
     }).join("\\n");
     var fullDesc = w.notes ? desc + "\\n\\n" + escIcs(w.notes) : desc;
@@ -797,8 +1575,13 @@ function importJson(file) {
       });
       state.workouts.sort(function (a, b) { return b.date.localeCompare(a.date); });
       persist();
+      var newBadges = checkBadges();
       render();
-      toast(added + "件をインポート");
+      if (newBadges.length) {
+        toast(added + "件をインポート / 🏅 新バッジ " + newBadges.length + "件");
+      } else {
+        toast(added + "件をインポート");
+      }
     } catch (err) {
       toast("ファイルを読み込めません");
     }
@@ -823,12 +1606,15 @@ document.addEventListener("click", function (e) {
   else if (a === "openPicker") openPicker();
   else if (a === "closeSheet") closeSheet();
   else if (a === "setPickerCat") setPickerCat(t.getAttribute("data-cat"));
-  else if (a === "pickExercise") pickExercise(t.getAttribute("data-name"), t.getAttribute("data-cat"));
+  else if (a === "pickExercise") pickExercise(t.getAttribute("data-name"), t.getAttribute("data-cat"), t.getAttribute("data-bw") === "1", t.getAttribute("data-time") === "1");
   else if (a === "addCustom") addCustom();
+  else if (a === "toggleCustomBw") toggleCustomBw();
+  else if (a === "toggleCustomTime") toggleCustomTime();
   else if (a === "addSet") addSet(parseInt(t.getAttribute("data-i"), 10));
   else if (a === "removeSet") removeSet(parseInt(t.getAttribute("data-i"), 10), parseInt(t.getAttribute("data-j"), 10));
   else if (a === "removeEx") removeEx(parseInt(t.getAttribute("data-i"), 10));
   else if (a === "save") save();
+  else if (a === "closePR") closePR();
   else if (a === "toggleSession") toggleSession(t.getAttribute("data-id"));
   else if (a === "deleteSession") deleteSession(t.getAttribute("data-id"));
   else if (a === "selectExercise") selectExercise(t.getAttribute("data-name"));
@@ -867,6 +1653,23 @@ document.addEventListener("change", function (e) {
 
 // Boot
 load();
+// Check badges silently on first load (existing users get retroactive unlocks without NEW tag)
+(function () {
+  var hadBadges = Object.keys(state.unlockedBadges).length > 0;
+  var ctx = { prCount: countAllTimePRs(state.workouts) };
+  BADGES.forEach(function (b) {
+    if (state.unlockedBadges[b.id]) return;
+    if (b.check(state.workouts, ctx)) {
+      state.unlockedBadges[b.id] = new Date().toISOString();
+      // Only flag as NEW if user already had some badges (they're an existing user discovering this feature)
+      // For brand-new users, retroactive unlocks during their first session don't deserve NEW tags
+      if (!hadBadges && state.workouts.length === 0) {
+        // No-op
+      }
+    }
+  });
+  persistBadges();
+})();
 render();
 </script>
 </body>

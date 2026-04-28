@@ -174,6 +174,33 @@
     border-radius: 3px; vertical-align: middle;
   }
   .bw-tag.time-tag { background: #60a5fa22; color: #60a5fa; }
+  .bw-tag.cable-tag { background: #06b6d422; color: #06b6d4; }
+  .cat-mini {
+    display: inline-block; margin-left: 6px; padding: 1px 5px;
+    font-size: 9px; font-weight: 700; letter-spacing: 0.1em;
+    border-radius: 3px; vertical-align: middle;
+  }
+
+  /* Search bar in picker */
+  .sheet-search {
+    display: flex; align-items: center; gap: 8px;
+    padding: 14px 20px 12px; border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  .sheet-search-icon { font-size: 14px; opacity: 0.6; flex-shrink: 0; }
+  .sheet-search-input {
+    flex: 1; padding: 10px 12px;
+    background: var(--surface); border: 1px solid var(--border);
+    color: var(--text); border-radius: 10px; font-size: 14px;
+    outline: none; transition: border-color 150ms;
+  }
+  .sheet-search-input:focus { border-color: var(--accent); background: #ffffff; }
+  .sheet-search-clear {
+    background: var(--border-strong); color: #ffffff; border: none;
+    width: 22px; height: 22px; border-radius: 50%; font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; padding: 0; line-height: 1;
+  }
 
   @keyframes slideUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
   .anim-in { animation: slideUp 220ms ease-out both; }
@@ -312,6 +339,9 @@ var LIB = {
     { name: "ダンベルベンチプレス" },
     { name: "インクラインダンベルプレス" },
     { name: "ダンベルフライ" },
+    { name: "ケーブルクロスオーバー", cable: true },
+    { name: "ケーブルフライ", cable: true },
+    { name: "ケーブルチェストプレス", cable: true },
     { name: "ディップス", bw: true },
     { name: "腕立て伏せ", bw: true },
   ]},
@@ -320,6 +350,11 @@ var LIB = {
     { name: "ベントオーバーロウ" },
     { name: "ダンベルロウ" },
     { name: "Tバーロウ" },
+    { name: "ラットプルダウン", cable: true },
+    { name: "ケーブルロウ", cable: true },
+    { name: "シーテッドロウ", cable: true },
+    { name: "フェイスプル", cable: true },
+    { name: "ストレートアームプルダウン", cable: true },
     { name: "懸垂", bw: true },
     { name: "チンニング", bw: true },
     { name: "インバーテッドロウ", bw: true },
@@ -333,6 +368,10 @@ var LIB = {
     { name: "フロントレイズ" },
     { name: "リアレイズ" },
     { name: "アップライトロウ" },
+    { name: "ケーブルサイドレイズ", cable: true },
+    { name: "ケーブルフロントレイズ", cable: true },
+    { name: "ケーブルリアレイズ", cable: true },
+    { name: "ケーブルアップライトロウ", cable: true },
     { name: "パイクプッシュアップ", bw: true },
   ]},
   arms:       { label: "腕",   code: "ARMS",   color: "#a78bfa", items: [
@@ -344,6 +383,11 @@ var LIB = {
     { name: "フレンチプレス" },
     { name: "トライセプスエクステンション" },
     { name: "キックバック" },
+    { name: "ケーブルカール", cable: true },
+    { name: "ロープカール", cable: true },
+    { name: "ケーブルプッシュダウン", cable: true },
+    { name: "ロープエクステンション", cable: true },
+    { name: "オーバーヘッドケーブルエクステンション", cable: true },
     { name: "ナロープッシュアップ", bw: true },
   ]},
   legs:       { label: "脚",   code: "LEGS",   color: "#34d399", items: [
@@ -354,6 +398,9 @@ var LIB = {
     { name: "ランジ" },
     { name: "ヒップスラスト" },
     { name: "カーフレイズ" },
+    { name: "ケーブルキックバック", cable: true },
+    { name: "ケーブルプルスルー", cable: true },
+    { name: "ケーブルアブダクション", cable: true },
     { name: "自重スクワット", bw: true },
     { name: "ピストルスクワット", bw: true },
     { name: "ジャンピングスクワット", bw: true },
@@ -364,7 +411,8 @@ var LIB = {
     { name: "プランク", bw: true, time: true },
     { name: "サイドプランク", bw: true, time: true },
     { name: "ロシアンツイスト" },
-    { name: "ケーブルクランチ" },
+    { name: "ケーブルクランチ", cable: true },
+    { name: "ケーブルウッドチョッパー", cable: true },
     { name: "クランチ", bw: true },
     { name: "レッグレイズ", bw: true },
     { name: "V字腹筋", bw: true },
@@ -392,6 +440,30 @@ var LIB = {
     { name: "レッグレイズ", bw: true },
     { name: "バーピー", bw: true },
     { name: "マウンテンクライマー", bw: true, time: true },
+  ]},
+  cable:      { label: "ケーブル", code: "CABLE", color: "#06b6d4", items: [
+    { name: "ケーブルクロスオーバー", cable: true },
+    { name: "ケーブルフライ", cable: true },
+    { name: "ケーブルチェストプレス", cable: true },
+    { name: "ラットプルダウン", cable: true },
+    { name: "ケーブルロウ", cable: true },
+    { name: "シーテッドロウ", cable: true },
+    { name: "フェイスプル", cable: true },
+    { name: "ストレートアームプルダウン", cable: true },
+    { name: "ケーブルサイドレイズ", cable: true },
+    { name: "ケーブルフロントレイズ", cable: true },
+    { name: "ケーブルリアレイズ", cable: true },
+    { name: "ケーブルアップライトロウ", cable: true },
+    { name: "ケーブルカール", cable: true },
+    { name: "ロープカール", cable: true },
+    { name: "ケーブルプッシュダウン", cable: true },
+    { name: "ロープエクステンション", cable: true },
+    { name: "オーバーヘッドケーブルエクステンション", cable: true },
+    { name: "ケーブルキックバック", cable: true },
+    { name: "ケーブルプルスルー", cable: true },
+    { name: "ケーブルアブダクション", cable: true },
+    { name: "ケーブルクランチ", cable: true },
+    { name: "ケーブルウッドチョッパー", cable: true },
   ]},
   custom:     { label: "カスタム", code: "CUSTOM", color: "#888", items: [] }
 };
@@ -638,6 +710,7 @@ var state = {
   customName: "",
   customIsBw: false,
   customIsTime: false,
+  pickerSearch: "",
   selectedExercise: null,
   metric: "max",
   unlockedBadges: {},     // { badgeId: ISOdateUnlocked }
@@ -849,6 +922,7 @@ function renderRecord() {
             '<div class="cat-tag display" style="background:' + cat.color + '22;color:' + cat.color + '">' + cat.code + '</div>' +
             (isBw ? '<div class="cat-tag display" style="background:#ec489922;color:#ec4899">自重</div>' : '') +
             (isTime ? '<div class="cat-tag display" style="background:#60a5fa22;color:#60a5fa">時間</div>' : '') +
+            (ex.cable ? '<div class="cat-tag display" style="background:#06b6d422;color:#06b6d4">ケーブル</div>' : '') +
           '</div>' +
         '</div>' +
         '<button class="icon-btn" data-action="removeEx" data-i="' + i + '">×</button>' +
@@ -932,6 +1006,7 @@ function renderHistory() {
             '<div class="ex-detail-name">' + esc(ex.name) + (isPR ? '<span class="pr-mini">PR</span>' : '') + '</div>' +
             '<div class="cat-tag display" style="background:' + cat.color + '22;color:' + cat.color + '">' + cat.code + '</div>' +
             (ex.bw ? '<div class="cat-tag display" style="background:#ec489922;color:#ec4899">自重</div>' : '') +
+            (ex.cable ? '<div class="cat-tag display" style="background:#06b6d422;color:#06b6d4">ケーブル</div>' : '') +
           '</div>';
         ex.sets.forEach(function (s, j) {
           var valStr;
@@ -1244,6 +1319,8 @@ function renderSheet() {
   if (!state.pickerOpen) return "";
   var cat = LIB[state.pickerCat];
   var isCustom = state.pickerCat === "custom";
+  var query = (state.pickerSearch || "").trim().toLowerCase();
+  var isSearching = query.length > 0;
 
   var html = '<div class="sheet-backdrop" data-backdrop>' +
     '<div class="sheet">' +
@@ -1251,43 +1328,104 @@ function renderSheet() {
       '<div class="sheet-header">' +
         '<div class="sheet-title display">種目を選択</div>' +
         '<button class="sheet-close" data-action="closeSheet">×</button>' +
-      '</div>' +
-      '<div class="sheet-cats no-scroll">';
+      '</div>';
 
-  Object.keys(LIB).forEach(function (k) {
-    var v = LIB[k];
-    var active = state.pickerCat === k;
-    var styleStr = active ? 'background:' + v.color + ';border-color:' + v.color + ';color:#ffffff' : '';
-    html += '<button class="chip ' + (active ? "active" : "") + '" style="' + styleStr + '" data-action="setPickerCat" data-cat="' + k + '">' + v.label + '</button>';
-  });
+  // Search bar (always visible, except in custom tab where we ask for a new name)
+  if (!isCustom) {
+    html += '<div class="sheet-search">' +
+      '<div class="sheet-search-icon">🔍</div>' +
+      '<input class="sheet-search-input" placeholder="種目を検索（例：ベンチ、ケーブル）" value="' + esc(state.pickerSearch) + '" data-field="pickerSearch" type="search" autocomplete="off">' +
+      (isSearching ? '<button class="sheet-search-clear" data-action="clearSearch">×</button>' : '') +
+    '</div>';
+  }
 
-  html += '</div><div class="sheet-body">';
+  // Category chips (hidden during search)
+  if (!isSearching) {
+    html += '<div class="sheet-cats no-scroll">';
+    Object.keys(LIB).forEach(function (k) {
+      var v = LIB[k];
+      var active = state.pickerCat === k;
+      var styleStr = active ? 'background:' + v.color + ';border-color:' + v.color + ';color:#ffffff' : '';
+      html += '<button class="chip ' + (active ? "active" : "") + '" style="' + styleStr + '" data-action="setPickerCat" data-cat="' + k + '">' + v.label + '</button>';
+    });
+    html += '</div>';
+  }
 
-  if (isCustom) {
+  html += '<div class="sheet-body">';
+
+  if (isCustom && !isSearching) {
     var dis = !state.customName.trim();
     html += '<div class="label display">種目名を入力</div>' +
       '<input class="input" placeholder="例：ケーブルフライ" value="' + esc(state.customName) + '" data-field="customName">' +
       '<div style="display:flex;gap:8px;margin-top:12px">' +
-        '<button class="seg display' + (state.customIsBw ? ' active' : '') + '" style="flex:1;padding:10px 8px;background:' + (state.customIsBw ? 'var(--bg)' : 'var(--surface)') + ';color:' + (state.customIsBw ? '#ec4899' : 'var(--muted)') + ';border:1px solid var(--border);border-radius:8px" data-action="toggleCustomBw">自重</button>' +
-        '<button class="seg display' + (state.customIsTime ? ' active' : '') + '" style="flex:1;padding:10px 8px;background:' + (state.customIsTime ? 'var(--bg)' : 'var(--surface)') + ';color:' + (state.customIsTime ? '#60a5fa' : 'var(--muted)') + ';border:1px solid var(--border);border-radius:8px" data-action="toggleCustomTime">時間（秒）</button>' +
+        '<button class="seg display' + (state.customIsBw ? ' active' : '') + '" style="flex:1;padding:10px 8px;background:' + (state.customIsBw ? '#ffffff' : 'var(--surface)') + ';color:' + (state.customIsBw ? '#ec4899' : 'var(--muted)') + ';border:1px solid var(--border);border-radius:8px" data-action="toggleCustomBw">自重</button>' +
+        '<button class="seg display' + (state.customIsTime ? ' active' : '') + '" style="flex:1;padding:10px 8px;background:' + (state.customIsTime ? '#ffffff' : 'var(--surface)') + ';color:' + (state.customIsTime ? '#60a5fa' : 'var(--muted)') + ';border:1px solid var(--border);border-radius:8px" data-action="toggleCustomTime">時間（秒）</button>' +
       '</div>' +
       '<div style="font-size:11px;color:var(--muted);margin-top:8px;line-height:1.5">' +
         '通常はそのまま追加。自重なら「自重」を、プランクなど秒数記録なら「時間」もオン。' +
       '</div>' +
-      '<button class="save-btn display" style="margin-top:12px;' + (dis ? 'background:var(--surface);color:var(--muted)' : '') + '" data-action="addCustom">追加</button>';
+      '<button class="save-btn display" style="margin-top:12px;' + (dis ? 'background:var(--surface);color:var(--muted);box-shadow:none' : '') + '" data-action="addCustom">追加</button>';
+  } else if (isSearching) {
+    // Cross-category search results
+    var results = [];
+    var seen = {};
+    Object.keys(LIB).forEach(function (k) {
+      if (k === "custom") return;
+      var libCat = LIB[k];
+      libCat.items.forEach(function (item) {
+        if (item.name.toLowerCase().indexOf(query) === -1) return;
+        // Dedupe by name+category combo (same name in different cats are different entries)
+        var key = k + ":" + item.name;
+        if (seen[key]) return;
+        seen[key] = true;
+        results.push({ item: item, catKey: k, catData: libCat });
+      });
+    });
+
+    if (!results.length) {
+      html += '<div style="padding:48px 20px;text-align:center;color:var(--muted)">' +
+        '<div style="font-size:36px;color:var(--border);margin-bottom:12px">🔍</div>' +
+        '<div style="font-size:14px">「' + esc(state.pickerSearch) + '」に一致する種目はありません</div>' +
+        '<div style="font-size:12px;margin-top:8px">カスタムタブから新規追加できます</div>' +
+      '</div>';
+    } else {
+      html += '<div style="font-size:11px;color:var(--muted);margin-bottom:10px;letter-spacing:0.1em">' + results.length + '件の種目</div>';
+      html += '<div class="ex-grid">';
+      results.forEach(function (r) {
+        var item = r.item;
+        var libCat = r.catData;
+        var bwAttr = item.bw ? ' data-bw="1"' : '';
+        var timeAttr = item.time ? ' data-time="1"' : '';
+        var cableAttr = item.cable ? ' data-cable="1"' : '';
+        html += '<button class="ex-pick" data-action="pickExercise" data-name="' + esc(item.name) + '" data-cat="' + r.catKey + '"' + bwAttr + timeAttr + cableAttr + '>' +
+          '<div class="ex-pick-bar" style="background:' + libCat.color + '"></div>' +
+          '<span class="ex-pick-name">' + esc(item.name) +
+            '<span class="cat-mini" style="background:' + libCat.color + '22;color:' + libCat.color + '">' + libCat.code + '</span>' +
+            (item.bw ? '<span class="bw-tag">自重</span>' : '') +
+            (item.time ? '<span class="bw-tag time-tag">秒</span>' : '') +
+            (item.cable ? '<span class="bw-tag cable-tag">ケーブル</span>' : '') +
+          '</span>' +
+        '</button>';
+      });
+      html += '</div>';
+    }
   } else {
+    // Category browsing (no search)
     html += '<div class="ex-grid">';
     cat.items.forEach(function (item) {
       var itemName = item.name;
       var isBw = !!item.bw;
       var isTime = !!item.time;
+      var isCable = !!item.cable;
       var bwAttr = isBw ? ' data-bw="1"' : '';
       var timeAttr = isTime ? ' data-time="1"' : '';
-      html += '<button class="ex-pick" data-action="pickExercise" data-name="' + esc(itemName) + '" data-cat="' + state.pickerCat + '"' + bwAttr + timeAttr + '>' +
+      var cableAttr = isCable ? ' data-cable="1"' : '';
+      html += '<button class="ex-pick" data-action="pickExercise" data-name="' + esc(itemName) + '" data-cat="' + state.pickerCat + '"' + bwAttr + timeAttr + cableAttr + '>' +
         '<div class="ex-pick-bar" style="background:' + cat.color + '"></div>' +
         '<span class="ex-pick-name">' + esc(itemName) +
           (isBw ? '<span class="bw-tag">自重</span>' : '') +
           (isTime ? '<span class="bw-tag time-tag">秒</span>' : '') +
+          (isCable ? '<span class="bw-tag cable-tag">ケーブル</span>' : '') +
         '</span>' +
       '</button>';
     });
@@ -1311,6 +1449,7 @@ function openPicker() {
   state.customName = "";
   state.customIsBw = false;
   state.customIsTime = false;
+  state.pickerSearch = "";
   render();
 }
 function toggleCustomBw() { state.customIsBw = !state.customIsBw; render(); }
@@ -1322,15 +1461,17 @@ function toggleCustomTime() {
 function closeSheet() { state.pickerOpen = false; render(); }
 function setPickerCat(cat) { state.pickerCat = cat; render(); }
 
-function pickExercise(name, cat, isBw, isTime) {
+function pickExercise(name, cat, isBw, isTime, isCable) {
   state.draft.exercises.push({
     name: name,
     category: cat,
     bw: !!isBw,
     time: !!isTime,
+    cable: !!isCable,
     sets: [{ weight: "", reps: "" }]
   });
   state.pickerOpen = false;
+  state.pickerSearch = "";
   render();
 }
 
@@ -1606,10 +1747,11 @@ document.addEventListener("click", function (e) {
   else if (a === "openPicker") openPicker();
   else if (a === "closeSheet") closeSheet();
   else if (a === "setPickerCat") setPickerCat(t.getAttribute("data-cat"));
-  else if (a === "pickExercise") pickExercise(t.getAttribute("data-name"), t.getAttribute("data-cat"), t.getAttribute("data-bw") === "1", t.getAttribute("data-time") === "1");
+  else if (a === "pickExercise") pickExercise(t.getAttribute("data-name"), t.getAttribute("data-cat"), t.getAttribute("data-bw") === "1", t.getAttribute("data-time") === "1", t.getAttribute("data-cable") === "1");
   else if (a === "addCustom") addCustom();
   else if (a === "toggleCustomBw") toggleCustomBw();
   else if (a === "toggleCustomTime") toggleCustomTime();
+  else if (a === "clearSearch") { state.pickerSearch = ""; render(); }
   else if (a === "addSet") addSet(parseInt(t.getAttribute("data-i"), 10));
   else if (a === "removeSet") removeSet(parseInt(t.getAttribute("data-i"), 10), parseInt(t.getAttribute("data-j"), 10));
   else if (a === "removeEx") removeEx(parseInt(t.getAttribute("data-i"), 10));
@@ -1641,6 +1783,20 @@ document.addEventListener("input", function (e) {
       state.draft.exercises[ii].sets[jj][f] = t.value;
     }
   } else if (f === "customName") state.customName = t.value;
+  else if (f === "pickerSearch") {
+    state.pickerSearch = t.value;
+    render();
+    // Refocus search input after re-render
+    setTimeout(function () {
+      var inp = document.querySelector(".sheet-search-input");
+      if (inp && document.activeElement !== inp) {
+        inp.focus();
+        // Move cursor to end
+        var len = inp.value.length;
+        try { inp.setSelectionRange(len, len); } catch (e) {}
+      }
+    }, 0);
+  }
 });
 
 document.addEventListener("change", function (e) {
